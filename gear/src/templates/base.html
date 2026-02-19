@@ -1,0 +1,61 @@
+{% load static %}
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Title block for child templates -->
+    <title>{% block title %}Demo App{% endblock %}</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Optional: add custom Tailwind config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1D4ED8',
+                        secondary: '#2563EB'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Static CSS (if you have prebuilt CSS) -->
+    <link href="{% static 'dist/styles.css' %}" rel="stylesheet">
+    
+    {% block head_extra %}{% endblock %}
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-primary text-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold">{% block header_title %}Demo App{% endblock %}</h1>
+            {% block header_extra %}{% endblock %}
+        </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="flex-1 container mx-auto px-4 py-6">
+        {% block content %}
+        <!-- Child templates will inject content here -->
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-200 text-gray-700 py-4 text-center">
+        &copy; {% now "Y" %} Demo App
+        {% block footer_extra %}{% endblock %}
+    </footer>
+
+    {% block scripts %}{% endblock %}
+
+</body>
+</html>
