@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Demo App{% endblock %}
+
+{% block header_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Welcome Text -->
+    <div>
+        <h2 class="text-xl font-semibold text-gray-800">Welcome back! Here's what's happening today.</h2>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white shadow rounded p-4 text-center">
+            <p class="text-gray-500 text-sm">Pendapatan Bulanan</p>
+            <p class="text-xl font-bold">Rp 45.000.000</p>
+        </div>
+        <div class="bg-white shadow rounded p-4 text-center">
+            <p class="text-gray-500 text-sm">Harga Garam Krosok</p>
+            <p class="text-xl font-bold">Rp 2.800</p>
+        </div>
+        <div class="bg-white shadow rounded p-4 text-center">
+            <p class="text-gray-500 text-sm">Harga Iodium</p>
+            <p class="text-xl font-bold">Rp 200</p>
+        </div>
+        <div class="bg-white shadow rounded p-4 text-center">
+            <p class="text-gray-500 text-sm">Biaya Operasional</p>
+            <p class="text-xl font-bold">Rp 450</p>
+        </div>
+    </div>
+
+    <!-- Predictive Margin Calculator Table -->
+    <div class="bg-white shadow rounded p-4">
+        <h3 class="font-semibold mb-2">Predictive Margin Calculator</h3>
+        <p class="text-gray-500 text-sm mb-4">Target Margin Rp 500/kg</p>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full border border-gray-200">
+                <thead class="bg-blue-900 text-white">
+                    <tr>
+                        <th class="px-4 py-2 text-left">Produk</th>
+                        <th class="px-4 py-2 text-left">Total HPP</th>
+                        <th class="px-4 py-2 text-left">Harga Jual</th>
+                        <th class="px-4 py-2 text-left">Piutang</th>
+                        <th class="px-4 py-2 text-left">Status</th>
+                        <th class="px-4 py-2 text-left">Rekomendasi Harga Baru</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-t">
+                        <td class="px-4 py-2">Garam 1 kg</td>
+                        <td class="px-4 py-2">Rp 3.500</td>
+                        <td class="px-4 py-2">Rp 4.000</td>
+                        <td class="px-4 py-2">Rp 500</td>
+                        <td class="px-4 py-2"><span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">Tercapai</span></td>
+                        <td class="px-4 py-2">-</td>
+                    </tr>
+                    <tr class="border-t">
+                        <td class="px-4 py-2">Garam 800 g</td>
+                        <td class="px-4 py-2">Rp 2.600</td>
+                        <td class="px-4 py-2">Rp 2.900</td>
+                        <td class="px-4 py-2">Rp 300</td>
+                        <td class="px-4 py-2"><span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm">Tidak tercapai</span></td>
+                        <td class="px-4 py-2">Rp 3.000</td>
+                    </tr>
+                    <tr class="border-t">
+                        <td class="px-4 py-2">Garam 500 g</td>
+                        <td class="px-4 py-2">Rp 1.875</td>
+                        <td class="px-4 py-2">Rp 2.200</td>
+                        <td class="px-4 py-2">Rp 325</td>
+                        <td class="px-4 py-2"><span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">Tercapai</span></td>
+                        <td class="px-4 py-2">-</td>
+                    </tr>
+                    <tr class="border-t">
+                        <td class="px-4 py-2">Garam 250 g</td>
+                        <td class="px-4 py-2">Rp 1.500</td>
+                        <td class="px-4 py-2">Rp 1.600</td>
+                        <td class="px-4 py-2">Rp 125</td>
+                        <td class="px-4 py-2"><span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm">Tidak tercapai</span></td>
+                        <td class="px-4 py-2">Rp 1.700</td>
+                    </tr>
+                    <tr class="border-t">
+                        <td class="px-4 py-2">Garam 150 g</td>
+                        <td class="px-4 py-2">Rp 988</td>
+                        <td class="px-4 py-2">Rp 1.100</td>
+                        <td class="px-4 py-2">Rp 112</td>
+                        <td class="px-4 py-2"><span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm">Tidak tercapai</span></td>
+                        <td class="px-4 py-2">Rp 1.112</td>
+                    </tr>
+                    <tr class="border-t">
+                        <td class="px-4 py-2">Garam 100 g</td>
+                        <td class="px-4 py-2">Rp 435</td>
+                        <td class="px-4 py-2">Rp 450</td>
+                        <td class="px-4 py-2">Rp 15</td>
+                        <td class="px-4 py-2"><span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm">Tidak tercapai</span></td>
+                        <td class="px-4 py-2">Rp 485</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
