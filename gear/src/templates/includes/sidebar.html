@@ -1,0 +1,127 @@
+<aside class="w-64 bg-[#FAFAFC] border-r border-gray-200 flex flex-col h-screen font-sans">
+    <div class="p-6">
+        <h1 class="text-2xl font-black text-[#2B308B] tracking-wide">GEAR</h1>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto px-4 pb-4 space-y-6 custom-scrollbar">
+        
+        <div>
+            <div class="flex items-center text-gray-500 text-sm font-medium mb-3 px-2">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                Operasional
+            </div>
+            <ul class="space-y-1">
+                <li>
+                    <a href="{% url 'inventory:bahan-baku' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'inventory:bahan-baku' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                        <span class="mr-3">📦</span> Bahan Baku
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'inventory:barang-jadi' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'inventory:barang-jadi' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                        <span class="mr-3">📦</span> Barang Jadi
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'orders:pemesanan-operasional' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'orders:pemesanan-operasional' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                        <span class="mr-3">📄</span> Pemesanan
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'finance:keuangan-operasional' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'finance:keuangan-operasional' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                        <span class="mr-3">💵</span> Keuangan
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'inventory:supplier' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'inventory:supplier' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                        <span class="mr-3">👥</span> Supplier
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'orders:pelanggan-operasional' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'orders:pelanggan-operasional' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                        <span class="mr-3">👥</span> Pelanggan
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'main:opname' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'main:opname' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                        <span class="mr-3">✏️</span> Opname
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div>
+            <div class="flex items-center text-gray-500 text-sm font-medium mb-3 px-2">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                Analitik
+            </div>
+            <ul class="space-y-1">
+                <li>
+                    <a href="{% url 'inventory:inventori-analitik' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'inventory:inventori-analitik' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                        <span class="mr-3">📦</span> Inventori
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'orders:pemesanan-analitik' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'orders:pemesanan-analitik' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                        <span class="mr-3">📄</span> Pemesanan
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'finance:keuangan-analitik' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'finance:keuangan-analitik' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                        <span class="mr-3">💵</span> Keuangan
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'orders:performa-sales' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'orders:performa-sales' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                        <span class="mr-3">📊</span> Performa Sales
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'orders:pelanggan-analitik' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'orders:pelanggan-analitik' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                        <span class="mr-3">👥</span> Pelanggan
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'analytics:harga-jual' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'analytics:harga-jual' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                        <span class="mr-3">💵</span> Harga Jual
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div>
+            <div class="flex items-center text-gray-500 text-sm font-medium mb-3 px-2">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                Akun
+            </div>
+            <ul class="space-y-1">
+                <li>
+                    <a href="{% url 'accounts:my-account' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'accounts:my-account' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                        <span class="mr-3">👥</span> Akun Saya
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'accounts:index' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'accounts:index' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                        <span class="mr-3">👥</span> Akun Lain
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="p-4 border-t border-gray-200">
+        <a href="{% url 'accounts:my-account' %}" class="flex items-center justify-between hover:bg-gray-100 p-2 rounded-lg transition-colors {% if request.resolver_match.view_name == 'accounts:my-account' %}bg-gray-100{% endif %}">
+            <div class="flex items-center">
+                <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden border border-gray-300">
+                    <svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-900">Bambang</p>
+                    <p class="text-xs text-gray-500">Owner</p>
+                </div>
+            </div>
+            <div class="w-5 h-5 rounded-full border border-gray-300 flex items-center justify-center">
+                <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </div>
+        </a>
+    </div>
+</aside>
