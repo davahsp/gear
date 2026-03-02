@@ -1,20 +1,17 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 
-class Profile(models.Model):
+class GEARUser(AbstractUser):
 
-    user = models.OneToOneField(to=User,
-                                on_delete=models.PROTECT,
-                                related_name='profile')
-                             
-    phone_number = models.CharField(max_length=15, 
-                                    null=True)
+    phone_number = models.CharField(max_length=15)
 
-    avatar = models.OneToOneField(to='Avatar', 
-                                  null=True, 
-                                  on_delete=models.SET_NULL,
-                                  related_name='profile')
+    def __str__(self):
+        return self.username
 
 class Avatar(models.Model):
+
+    user = models.OneToOneField(to='GEARUser',
+                                on_delete=models.CASCADE,
+                                related_name='avatar')
 
     file = models.FileField()
