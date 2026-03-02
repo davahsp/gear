@@ -61,6 +61,8 @@ INSTALLED_APPS = [
     'apps.orders',
 ]
 
+AUTH_USER_MODEL = 'apps.accounts.GEARUser'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

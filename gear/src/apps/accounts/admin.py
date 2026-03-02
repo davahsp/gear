@@ -1,4 +1,20 @@
 from django.contrib import admin
-from .models import Profile, Avatar
+from django.contrib.auth.admin import UserAdmin
 
-admin.site.register([Profile, Avatar])
+from .forms import GEARUserCreationForm, GEARUserChangeForm
+from .models import GEARUser
+
+class GEARUserAdmin(UserAdmin):
+    add_form = GEARUserCreationForm
+    form = GEARUserChangeForm
+    model = GEARUser
+
+    list_display = [
+        'username',
+        'phone_number',
+        'is_staff',
+        'is_active',
+    ]
+
+admin.site.register(GEARUserAdmin, GEARUser)
+    
