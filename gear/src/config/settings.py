@@ -61,7 +61,7 @@ INSTALLED_APPS = [
     'apps.orders',
 ]
 
-AUTH_USER_MODEL = 'apps.accounts.GEARUser'
+AUTH_USER_MODEL = 'accounts.GEARUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

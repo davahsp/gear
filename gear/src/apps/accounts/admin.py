@@ -9,12 +9,30 @@ class GEARUserAdmin(UserAdmin):
     form = GEARUserChangeForm
     model = GEARUser
 
+    ordering = 'first_name', 'last_name'
+
     list_display = [
-        'username',
+        'first_name',
         'phone_number',
         'is_staff',
         'is_active',
     ]
 
-admin.site.register(GEARUserAdmin, GEARUser)
+    # add user page fields
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('phone_number', 'password', 'first_name', 'is_active', 'is_staff'),
+        }),
+    )
+
+    # edit user page fields
+    fieldsets = (
+        (None, {'fields': ('phone_number', 'password')}),
+        ('Personal info', {'fields': ('first_name', 'last_name')}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Important dates', {'fields': ('last_login', 'date_joined')}),
+    )
+
+admin.site.register(GEARUser, GEARUserAdmin)
     

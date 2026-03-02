@@ -1,7 +1,10 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
 from datetime import date
+
+AUTH_USER_MODEL = get_user_model()
 
 class OrderStatus(models.TextChoices):
     REQUESTED = 'REQUESTED', 'Requested'
@@ -36,7 +39,7 @@ class Order(models.Model):
 
     is_troubled = models.BooleanField(default=False)
 
-    who_inputs = models.ForeignKey(to=User,
+    who_inputs = models.ForeignKey(to=AUTH_USER_MODEL,
                                    on_delete=models.PROTECT,
                                    related_name='order_inputs')
     
