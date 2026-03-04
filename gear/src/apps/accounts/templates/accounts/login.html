@@ -1,0 +1,50 @@
+{% extends 'layout_public.html' %}
+{% block title %}Login | GEAR{% endblock %}
+
+{% block public_content %}
+<div class="space-y-6">
+    <div class="text-center">
+        <h2 class="text-3xl font-bold text-gray-900 tracking-tight">Login</h2>
+        <p class="mt-2 text-sm text-gray-500">Selamat datang. Mohon masukkan kredensial Anda</p>
+    </div>
+
+    {% if form.errors %}
+    <div class="p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-600">
+        Email atau password salah. Silakan coba lagi.
+    </div>
+    {% endif %}
+
+    <form method="POST" class="space-y-5">
+        {% csrf_token %}
+        
+        <input type="hidden" name="next" value="{{ request.GET.next }}">
+
+        <div>
+            <label for="{{ form.username.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                {{ form.username.label }}
+            </label>
+            {{ form.username }}
+            <p class="mt-1.5 text-xs text-gray-400 italic">
+                *Masukkan hanya angka, tanpa dashes (-), spasi, atau simbol lain
+            </p>
+        </div>
+
+        <div>
+            <div class="flex items-center justify-between mb-1.5">
+                <label for="{{ form.password.id_for_label }}" class="block text-sm font-semibold text-gray-700">
+                    {{ form.password.label }}
+                </label>
+                <a href="#" class="text-xs font-medium text-brand hover:underline">Lupa password?</a>
+            </div>
+            {{ form.password }}
+        </div>
+
+        <div class="pt-2">
+            <button type="submit" 
+                class="w-full bg-brand text-white font-bold py-3 px-4 rounded-lg hover:bg-opacity-90 transition-colors shadow-md shadow-blue-900/10 active:transform active:scale-[0.98]">
+                Login
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

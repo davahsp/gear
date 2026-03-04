@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}GEAR{% endblock %}</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            primary: '#1D4ED8',
+                            secondary: '#2563EB',
+                            brand: '#2B308B'
+                        }
+                    }
+                }
+            }
+        </script>
+
+        <link href="{% static 'dist/styles.css' %}" rel="stylesheet">
+        {% block head_extra %}{% endblock %}
+    </head>
+    <body class="bg-gray-50 text-gray-800 font-sans">
+        {% block body_layout %}{% endblock %}
+        
+        {% block scripts %}{% endblock %}
+    </body>
+</html>
