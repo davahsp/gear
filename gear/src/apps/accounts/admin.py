@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import Permission
 
 from .forms import GEARUserCreationForm, GEARUserChangeForm
 from .models import GEARUser
@@ -35,4 +36,10 @@ class GEARUserAdmin(UserAdmin):
     )
 
 admin.site.register(GEARUser, GEARUserAdmin)
+
+@admin.register(Permission)
+class PermissionAdmin(admin.ModelAdmin):
+    list_display = ('name', 'content_type', 'codename')
+    search_fields = ('name', 'codename')
+    list_filter = ('content_type',)
     
