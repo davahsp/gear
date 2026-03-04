@@ -63,6 +63,9 @@ INSTALLED_APPS = [
 
 AUTH_USER_MODEL = 'accounts.GEARUser'
 
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/accounts/my-account/'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

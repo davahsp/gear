@@ -10,6 +10,7 @@ class GEARUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     phone_number = models.CharField(max_length=15, unique=True)
     username = None
+    address = models.CharField(max_length=127, null=True)
 
     USERNAME_FIELD = 'phone_number'
 
