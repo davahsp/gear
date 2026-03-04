@@ -66,6 +66,8 @@ AUTH_USER_MODEL = 'accounts.GEARUser'
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/accounts/my-account/'
 
+USER_DEFAULT_PASSWORD = os.environ.get('USER_DEFAULT_PASSWORD')
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
