@@ -8,6 +8,7 @@ import re
 from .managers import GEARUserManager
 
 from uuid import uuid4
+import os
 
 class GEARUser(AbstractUser):
 
@@ -34,7 +35,12 @@ class GEARUser(AbstractUser):
 
     objects = GEARUserManager()
 
-    avatar = models.FileField(null=True)
+    @staticmethod
+    def get_upload_target(instance, filename: str):
+        return f'avatars/avatar-{instance.id}/{filename}'
+
+    # avatar file uploaded to /MEDIA_ROOT/avatars/
+    avatar = models.ImageField(null=True, upload_to=get_upload_target)
 
     # override method clean to do custom validation
     def clean(self):

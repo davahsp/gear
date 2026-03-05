@@ -15,7 +15,7 @@ class GEARUserChangeForm(UserChangeForm):
         model = GEARUser
         fields = ('first_name', 'phone_number')
 
-class UserForm(ModelForm):
+class GEARUserCreateForm(ModelForm):
 
     class Meta:
         model = GEARUser
@@ -46,6 +46,53 @@ class UserForm(ModelForm):
             'address': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none',
                 'placeholder': 'ex: Jl. XXXXX'
+            }),
+        }
+
+class GEARUserUpdateForm(ModelForm):
+    
+    class Meta:
+        model = GEARUser
+        fields = [
+            'first_name',
+            'last_name',
+            'phone_number',
+            'email',
+            'address',
+            'avatar'
+        ]
+        labels = {
+            'first_name': 'Nama Depan',
+            'last_name': 'Nama Belakang',
+            'phone_number': 'Kontak',
+            'email': 'Email',
+            'address': 'Alamat',
+            'avatar': 'Avatar',
+        }
+        widgets = {
+            'first_name': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none',
+                'placeholder': 'Masukkan nama depan'
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none',
+                'placeholder': 'Masukkan nama belakang'
+            }),
+            'phone_number': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none',
+                'placeholder': 'ex: 08XXXXXXXXXX'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none',
+                'placeholder': 'ex: nama@email.com'
+            }),
+            'address': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none',
+                'placeholder': 'ex: Jl. XXXXX'
+            }),
+            'avatar': forms.FileInput(attrs={
+                # Uses Tailwind's `file:` modifier to style the browse button inside the input
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer',
             }),
         }
 
