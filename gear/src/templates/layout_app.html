@@ -7,6 +7,12 @@
     <main class="flex-1 flex flex-col h-screen overflow-y-auto">
         <header class="bg-white px-8 py-4 border-b border-gray-200">
             <div class="flex justify-between items-center w-full">
+                <button class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
+
                 <form action="/accounts/logout/" method="POST">
                     {% csrf_token %}
                     <button class="flex items-center text-sm font-semibold text-red-500 hover:text-red-700 transition-colors">
@@ -16,12 +22,6 @@
                         Logout
                     </button>
                 </form>
-
-                <button class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                    </svg>
-                </button>
             </div>
             {% block header_extra %}{% endblock %}
         </header>

@@ -112,11 +112,23 @@
         <a href="{% url 'accounts:my-account' %}" class="flex items-center justify-between hover:bg-gray-100 p-2 rounded-lg transition-colors {% if request.resolver_match.view_name == 'accounts:my-account' %}bg-gray-100{% endif %}">
             <div class="flex items-center">
                 <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden border border-gray-300">
-                    <svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                    {% if request.user.avatar %}
+                        <img src="{{ request.user.avatar.url }}" alt="Foto Profil {{ request.user.first_name }}" class="w-full h-full object-cover">
+                    {% else %}
+                        <svg class="w-16 h-16 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                        </svg>
+                    {% endif %}
                 </div>
                 <div class="ml-3">
-                    <p class="text-sm font-medium text-gray-900">Bambang</p>
-                    <p class="text-xs text-gray-500">Owner</p>
+                    <p class="text-sm font-medium text-gray-900">{{ request.user.get_full_name|default:'Tanpa Nama' }}</p>
+                    <p class="text-xs text-gray-500">
+                        {% if user.is_superuser %}
+                            Owner
+                        {% else %}
+                            {{ user.groups.all.0.name|default:'Tanpa Role' }}
+                        {% endif %}
+                    </p>
                 </div>
             </div>
             <div class="w-5 h-5 rounded-full border border-gray-300 flex items-center justify-center">
