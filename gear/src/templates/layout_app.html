@@ -37,3 +37,22 @@
     </main>
 </div>
 {% endblock %}
+
+{% block scripts %}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const sidebar = document.querySelector('.sidebar nav');
+        if (!sidebar) return;
+
+        const savedScrollPosition = localStorage.getItem('sidebar-scroll-pos');
+        if (savedScrollPosition) {
+            sidebar.scrollTop = parseInt(savedScrollPosition, 10);
+        }
+
+        window.addEventListener('beforeunload', function() {
+            localStorage.setItem('sidebar-scroll-pos', sidebar.scrollTop);
+        });
+    });
+</script>
+{% endblock %}
