@@ -29,7 +29,7 @@ class IndexView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
 
 class CreateAccountView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
     
-    permission_requied = 'accounts.add_gearuser'
+    permission_required = 'accounts.add_gearuser'
 
     template_name = 'accounts/create.html'
     form_class = UserForm
