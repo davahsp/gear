@@ -37,11 +37,22 @@
         <h2 class="text-xl font-bold mb-6">Tambah Akun</h2>
 
         <div class="space-y-6">
-            <div>
-                <label class="block text-sm font-bold text-gray-900 mb-2">Peran</label>
-                {{ form.groups }}
-            </div>
 
+            <div>
+                <label class="block text-sm font-bold text-gray-900 mb-3">Role / Bagian</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for checkbox in form.groups %}
+                    <label for="{{ checkbox.id_for_label }}" class="flex items-center p-4 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-blue-300 transition-all cursor-pointer">
+                        {{ checkbox.tag }}
+                        <span class="ml-3 text-sm font-semibold text-gray-700">
+                            {{ checkbox.choice_label }}
+                        </span>
+                    </label>
+                    {% endfor %}
+                </div>
+                <p class="text-xs text-gray-400 mt-2">Pilih satu atau lebih role untuk akun ini</p>
+            </div>
+            
             <div>
                 <label class="block text-sm font-bold text-gray-900 mb-2">Nama Depan</label>
                 {{ form.first_name }}

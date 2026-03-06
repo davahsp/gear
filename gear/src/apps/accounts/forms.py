@@ -1,5 +1,6 @@
 from .models import GEARUser
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
+from django.contrib.auth.models import Group
 from django.forms import ModelForm
 from django import forms
 
@@ -17,9 +18,17 @@ class GEARUserChangeForm(UserChangeForm):
 
 class AccountCreateForm(ModelForm):
 
+    groups = forms.ModelMultipleChoiceField(
+        queryset=Group.objects.all(),
+        widget=forms.CheckboxSelectMultiple(attrs={
+            'class': 'w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer'
+        }),
+        required=True
+    )
+
     class Meta:
         model = GEARUser
-        fields = ['groups', 'first_name', 'last_name', 'phone_number', 'address']
+        fields = ['first_name', 'last_name', 'phone_number', 'address', 'groups']
         labels = {
             'groups': 'Role',
             'first_name': 'Nama Depan',
@@ -28,9 +37,6 @@ class AccountCreateForm(ModelForm):
             'address': 'Alamat',
         }
         widgets = {
-            'groups': forms.SelectMultiple(attrs={
-                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white'
-            }),
             'first_name': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none',
                 'placeholder': 'Masukkan nama depan'

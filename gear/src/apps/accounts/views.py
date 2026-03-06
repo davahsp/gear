@@ -4,6 +4,9 @@ from django.contrib.auth.views import LoginView
 from django.views.generic import TemplateView, UpdateView, DeleteView, DetailView, CreateView
 from django.urls import reverse_lazy
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.http.response import HttpResponseRedirect
+from django.db import transaction
 
 from .forms import AccountCreateForm, AccountUpdateForm, PhoneAuthenticationForm
 from .models import GEARUser
@@ -40,13 +43,8 @@ class IndexView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        sales = GEARUser.objects.filter(groups__name='Sales')
-        warehouse = GEARUser.objects.filter(groups__name='Warehouse')
-        finance = GEARUser.objects.filter(groups__name='Finance')
-
-        context['sales'] = sales
-        context['warehouse'] = warehouse
-        context['finance'] = finance
+        context['accounts'] = GEARUser.objects.all() 
+        context['groups'] = Group.objects.all()
 
         return context
     
@@ -58,22 +56,16 @@ class AccountCreateView(LoginRequiredMixin, CreateView):
 
     def get_initial(self):
         initial = super().get_initial()
-        role_name = self.request.GET.get('default_role')
+        group_name = self.request.GET.get('default_role')
 
-        if role_name:
+        if group_name:
             try:
-                group = Group.objects.get(name__iexact=role_name)
+                group = Group.objects.get(name__iexact=group_name)
                 initial['groups'] = [group.id]
             except Group.DoesNotExist:
                 pass
 
         return initial
-    
-    def form_valid(self, form: AccountCreateForm):
-
-        # set the user password to default password defined in env
-        form.instance.set_password(settings.USER_DEFAULT_PASSWORD)
-        return super().form_valid(form)
     
 class AccountDetailView(LoginRequiredMixin, DetailView):
 

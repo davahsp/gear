@@ -11,9 +11,11 @@
             </a>
             <h1 class="text-4xl font-bold text-gray-900">Detail Akun</h1>
         </div>
-        <button type="submit" class="bg-[#2D8A70] hover:bg-[#246e5a] text-white px-6 py-2 rounded-lg font-medium transition-colors">
-            Simpan
-        </button>
+        <a href="{% url 'accounts:update' object.id %}">
+            <button class="bg-[#2D8A70] hover:bg-[#246e5a] text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                Ubah Akun ✏️
+            </button>
+        </a>
     </div>
 
     <section class="bg-white border border-gray-200 rounded-lg shadow-sm p-8 flex flex-col items-center text-center">
@@ -34,7 +36,13 @@
             {% if object.is_superuser %}
                 Owner
             {% else %}
-                {{ object.groups.all.0.name|default:'Tanpa Role' }}
+                {% if object.groups.all %}
+                    {% for group in object.groups.all %}
+                        {{ group.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    Tanpa Role
+                {% endif %}
             {% endif %}
         </p>
     </section>
