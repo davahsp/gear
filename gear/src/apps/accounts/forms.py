@@ -15,7 +15,7 @@ class GEARUserChangeForm(UserChangeForm):
         model = GEARUser
         fields = ('first_name', 'phone_number')
 
-class GEARUserCreateForm(ModelForm):
+class AccountCreateForm(ModelForm):
 
     class Meta:
         model = GEARUser
@@ -49,7 +49,7 @@ class GEARUserCreateForm(ModelForm):
             }),
         }
 
-class GEARUserUpdateForm(ModelForm):
+class AccountUpdateForm(ModelForm):
     
     class Meta:
         model = GEARUser
