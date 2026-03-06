@@ -1,14 +1,37 @@
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView
-from django.views.generic import TemplateView, FormView, UpdateView
+from django.views.generic import TemplateView, UpdateView, DeleteView, DetailView, CreateView
 from django.urls import reverse_lazy
 from django.conf import settings
 
-from .forms import GEARUserCreateForm, GEARUserUpdateForm, PhoneAuthenticationForm
+from .forms import AccountCreateForm, AccountUpdateForm, PhoneAuthenticationForm
 from .models import GEARUser
 
-class IndexView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
+class PhoneLoginView(LoginView):
+
+    template_name = 'accounts/login.html'
+    authentication_form = PhoneAuthenticationForm
+    redirect_authenticated_user = True
+
+class MyAccountDetailView(LoginRequiredMixin, DetailView):
+
+    template_name = 'accounts/my-account.html'
+
+    # override get_object to directly get the user object from request, 
+    # bypassing the fetch from user object manager and filter with pk in kwargs (which the caller won't provide)
+    def get_object(self, queryset=None):
+        return self.request.user
+
+class MyAccountUpdateView(LoginRequiredMixin, UpdateView):
+    form_class = AccountUpdateForm
+    template_name = 'accounts/my-account-update.html'
+    success_url = reverse_lazy('accounts:my-account')
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+class IndexView(LoginRequiredMixin, TemplateView):
 
     permission_required = 'accounts.view_gearuser'
 
@@ -26,13 +49,11 @@ class IndexView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
         context['finance'] = finance
 
         return context
-
-class CreateAccountView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
     
-    permission_required = 'accounts.add_gearuser'
-
+class AccountCreateView(LoginRequiredMixin, CreateView):
+    
     template_name = 'accounts/create.html'
-    form_class = GEARUserCreateForm
+    form_class = AccountCreateForm
     success_url = reverse_lazy('accounts:index')
 
     def get_initial(self):
@@ -47,28 +68,31 @@ class CreateAccountView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
                 pass
 
         return initial
+    
+    def form_valid(self, form: AccountCreateForm):
 
-    def form_valid(self, form: GEARUserCreateForm):
-        user = form.save(commit=False)
-        user.set_password(settings.USER_DEFAULT_PASSWORD)
-        user.save()
-        form.save_m2m()
-
+        # set the user password to default password defined in env
+        form.instance.set_password(settings.USER_DEFAULT_PASSWORD)
         return super().form_valid(form)
+    
+class AccountDetailView(LoginRequiredMixin, DetailView):
 
-class PhoneLoginView(LoginView):
+    model = GEARUser
+    template_name = 'accounts/detail.html'
 
-    template_name = 'accounts/login.html'
-    authentication_form = PhoneAuthenticationForm
-    redirect_authenticated_user = True
+class AccountUpdateView(LoginRequiredMixin, UpdateView):
 
-class UpdateAccountView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
-    permission_required = 'accounts.edit_gearuser'
-    form_class = GEARUserUpdateForm
-    template_name = 'accounts/my-account-update.html'
-    success_url = reverse_lazy('accounts:my-account')
+    form_class = AccountUpdateForm
+    template_name = 'accounts/update.html'
 
-    def get_object(self, queryset=None):
-        return self.request.user
+    success_url = reverse_lazy('accounts:index')
+
+    model = GEARUser
+    
+class AccountDeleteView(LoginRequiredMixin, DeleteView):
+    success_url = reverse_lazy('accounts:index')
+    template_name = 'accounts/delete.html'
+    model = GEARUser
+
 
 
