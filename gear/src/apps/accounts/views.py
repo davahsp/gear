@@ -1,12 +1,11 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView
 from django.views.generic import TemplateView, UpdateView, DeleteView, DetailView, CreateView
 from django.urls import reverse_lazy
-from django.conf import settings
 
 from .forms import AccountCreateForm, AccountUpdateForm, PhoneAuthenticationForm
-from .models import GEARUser
+from .models import Account
 
 class PhoneLoginView(LoginView):
 
@@ -31,68 +30,67 @@ class MyAccountUpdateView(LoginRequiredMixin, UpdateView):
     def get_object(self, queryset=None):
         return self.request.user
 
-class IndexView(LoginRequiredMixin, TemplateView):
+class IndexView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
 
-    permission_required = 'accounts.view_gearuser'
+    permission_required = 'accounts.view_account'
+    permission_denied_message = 'You do not have authorization to view all accounts'
 
     template_name = 'accounts/index.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        sales = GEARUser.objects.filter(groups__name='Sales')
-        warehouse = GEARUser.objects.filter(groups__name='Warehouse')
-        finance = GEARUser.objects.filter(groups__name='Finance')
-
-        context['sales'] = sales
-        context['warehouse'] = warehouse
-        context['finance'] = finance
+        context['accounts'] = Account.objects.all() 
+        context['groups'] = Group.objects.all()
 
         return context
     
-class AccountCreateView(LoginRequiredMixin, CreateView):
+class AccountCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     
+    permission_required = 'accounts.add_account'
+
     template_name = 'accounts/create.html'
     form_class = AccountCreateForm
     success_url = reverse_lazy('accounts:index')
 
     def get_initial(self):
         initial = super().get_initial()
-        role_name = self.request.GET.get('default_role')
+        group_name = self.request.GET.get('default_role')
 
-        if role_name:
+        if group_name:
             try:
-                group = Group.objects.get(name__iexact=role_name)
+                group = Group.objects.get(name__iexact=group_name)
                 initial['groups'] = [group.id]
             except Group.DoesNotExist:
                 pass
 
         return initial
     
-    def form_valid(self, form: AccountCreateForm):
+class AccountDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
 
-        # set the user password to default password defined in env
-        form.instance.set_password(settings.USER_DEFAULT_PASSWORD)
-        return super().form_valid(form)
-    
-class AccountDetailView(LoginRequiredMixin, DetailView):
+    permission_required = 'accounts.view_account'
 
-    model = GEARUser
+    model = Account
     template_name = 'accounts/detail.html'
 
-class AccountUpdateView(LoginRequiredMixin, UpdateView):
+class AccountUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+
+    permission_required = 'accounts.change_account'
 
     form_class = AccountUpdateForm
     template_name = 'accounts/update.html'
 
     success_url = reverse_lazy('accounts:index')
 
-    model = GEARUser
+    model = Account
     
-class AccountDeleteView(LoginRequiredMixin, DeleteView):
+class AccountDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+
+    permission_required = 'accounts.delete_account'
+
     success_url = reverse_lazy('accounts:index')
     template_name = 'accounts/delete.html'
-    model = GEARUser
+    model = Account
 
 
 

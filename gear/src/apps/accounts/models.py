@@ -3,14 +3,14 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator, MinLengthValidator
 from django.forms import ValidationError
 from django.utils.translation import gettext as _
+from django.conf import settings
 import re
 
-from .managers import GEARUserManager
+from .managers import AccountManager
 
 from uuid import uuid4
-import os
 
-class GEARUser(AbstractUser):
+class Account(AbstractUser):
 
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     phone_number = models.CharField(max_length=15, unique=True, error_messages={
@@ -33,9 +33,8 @@ class GEARUser(AbstractUser):
 
     USERNAME_FIELD = 'phone_number'
 
-    objects = GEARUserManager()
+    objects = AccountManager()
 
-    @staticmethod
     def get_upload_target(instance, filename: str):
         return f'avatars/avatar-{instance.id}/{filename}'
 
@@ -47,17 +46,17 @@ class GEARUser(AbstractUser):
 
         super().clean()
         
-        self.first_name = GEARUser.normalize_name(self.first_name)
+        self.first_name = Account.normalize_name(self.first_name)
 
         if len(self.first_name) < 3:
             raise ValidationError({'first_name': _('Nama depan harus terdiri dari minimal 3 huruf')})
         
-        self.last_name = GEARUser.normalize_name(self.last_name)
+        self.last_name = Account.normalize_name(self.last_name)
 
-        self.address = GEARUser.rm_excess_whitespace(self.address)
+        self.address = Account.rm_excess_whitespace(self.address)
 
     def normalize_name(name: str) -> str:
-        name = GEARUser.rm_excess_whitespace(name)
+        name = Account.rm_excess_whitespace(name)
         name = ' '.join([n.capitalize() for n in name.split(' ')])
         return name
     

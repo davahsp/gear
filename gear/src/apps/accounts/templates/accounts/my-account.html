@@ -31,7 +31,7 @@
             {% if object.is_superuser %}
                 Owner
             {% else %}
-                {{ object.groups.all.0.name|default:'Tanpa Role' }}
+                {{ user.groups.all|join:", "|default:"Tanpa Role" }}
             {% endif %}
         </p>
     </section>

@@ -61,7 +61,7 @@ INSTALLED_APPS = [
     'apps.orders',
 ]
 
-AUTH_USER_MODEL = 'accounts.GEARUser'
+AUTH_USER_MODEL = 'accounts.Account'
 
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/accounts/my-account/'

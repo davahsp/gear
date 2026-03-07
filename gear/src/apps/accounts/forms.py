@@ -1,25 +1,35 @@
-from .models import GEARUser
+from .models import Account
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
+from django.contrib.auth.models import Group
 from django.forms import ModelForm
 from django import forms
+from django.conf import settings
 
-class GEARUserCreationForm(UserCreationForm):
+class AccountCreationForm(UserCreationForm):
     
     class Meta:
-        model = GEARUser
+        model = Account
         fields = ('first_name', 'phone_number')
 
-class GEARUserChangeForm(UserChangeForm):
+class AccountChangeForm(UserChangeForm):
     
     class Meta:
-        model = GEARUser
+        model = Account
         fields = ('first_name', 'phone_number')
 
 class AccountCreateForm(ModelForm):
 
+    groups = forms.ModelMultipleChoiceField(
+        queryset=Group.objects.all(),
+        widget=forms.CheckboxSelectMultiple(attrs={
+            'class': 'w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer'
+        }),
+        required=True
+    )
+
     class Meta:
-        model = GEARUser
-        fields = ['groups', 'first_name', 'last_name', 'phone_number', 'address']
+        model = Account
+        fields = ['first_name', 'last_name', 'phone_number', 'address', 'groups']
         labels = {
             'groups': 'Role',
             'first_name': 'Nama Depan',
@@ -28,9 +38,6 @@ class AccountCreateForm(ModelForm):
             'address': 'Alamat',
         }
         widgets = {
-            'groups': forms.SelectMultiple(attrs={
-                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white'
-            }),
             'first_name': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none',
                 'placeholder': 'Masukkan nama depan'
@@ -48,11 +55,15 @@ class AccountCreateForm(ModelForm):
                 'placeholder': 'ex: Jl. XXXXX'
             }),
         }
+    
+    def save(self, commit=True):
+        self.instance.set_password(settings.USER_DEFAULT_PASSWORD)
+        return super().save(commit)
 
 class AccountUpdateForm(ModelForm):
     
     class Meta:
-        model = GEARUser
+        model = Account
         fields = [
             'first_name',
             'last_name',
