@@ -1,6 +1,6 @@
 from django.contrib.auth.models import BaseUserManager
 
-class GEARUserManager(BaseUserManager):
+class AccountManager(BaseUserManager):
 
 
     def create_user(self, phone_number, password=None, **extra_fields):

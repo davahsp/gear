@@ -1,19 +1,20 @@
-from .models import GEARUser
+from .models import Account
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
 from django.contrib.auth.models import Group
 from django.forms import ModelForm
 from django import forms
+from django.conf import settings
 
-class GEARUserCreationForm(UserCreationForm):
+class AccountCreationForm(UserCreationForm):
     
     class Meta:
-        model = GEARUser
+        model = Account
         fields = ('first_name', 'phone_number')
 
-class GEARUserChangeForm(UserChangeForm):
+class AccountChangeForm(UserChangeForm):
     
     class Meta:
-        model = GEARUser
+        model = Account
         fields = ('first_name', 'phone_number')
 
 class AccountCreateForm(ModelForm):
@@ -27,7 +28,7 @@ class AccountCreateForm(ModelForm):
     )
 
     class Meta:
-        model = GEARUser
+        model = Account
         fields = ['first_name', 'last_name', 'phone_number', 'address', 'groups']
         labels = {
             'groups': 'Role',
@@ -54,11 +55,15 @@ class AccountCreateForm(ModelForm):
                 'placeholder': 'ex: Jl. XXXXX'
             }),
         }
+    
+    def save(self, commit=True):
+        self.instance.set_password(settings.USER_DEFAULT_PASSWORD)
+        return super().save(commit)
 
 class AccountUpdateForm(ModelForm):
     
     class Meta:
-        model = GEARUser
+        model = Account
         fields = [
             'first_name',
             'last_name',

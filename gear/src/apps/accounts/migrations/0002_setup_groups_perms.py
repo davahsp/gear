@@ -4,16 +4,17 @@ from django.db import migrations
 from django.contrib.auth.management import create_permissions
 from django.apps import apps as global_apps
 
-def setup_rbac(apps, schema_editor):
+def setup_groups_perms(apps, schema_editor):
     Group = apps.get_model('auth', 'Group')
     Permission = apps.get_model('auth', 'Permission')
 
-    # to register permission into a group / role, insert the codename in the list paired with the corresponding group / role key
-    # permission codename syntax: [app_label].[view/add/change/delete]_[classnameinlowercase]
-    # example: permission to create an 'Order' within application whose app_label = 'orders': orders.add_order
-    # another example: perm to edit 'DailyProductionItem' within application whose app_label = 'inventory': inventory.edit_dailyproductionitem 
-
-    role_permissions = {
+    # Register groups & correspondence to existing permissions content type & codename here
+    # The map should contain group name as key, paired with list of 2-tuples as value
+    # The 2-tuple contains the app_label and codename, representing the permission associated to the group in key
+    # The codename follows the following format: [operation (add/view/change/delete)]_[object name in lowercase]
+    # E.g. change_dailyproduction to refer to permission to update DailyProduction model
+    
+    group_perms = {
         'Sales': [
             ('orders', 'add_order'),   
             ('orders', 'view_order'),
@@ -41,8 +42,8 @@ def setup_rbac(apps, schema_editor):
     for app_config in global_apps.get_app_configs():
         create_permissions(app_config, verbosity=0)
 
-    for role, permissions in role_permissions.items():
-        group, _ = Group.objects.get_or_create(name=role)
+    for group_name, permissions in group_perms.items():
+        group, _ = Group.objects.get_or_create(name=group_name)
         
         for app_label, codename in permissions:
             try:
@@ -54,22 +55,25 @@ def setup_rbac(apps, schema_editor):
             except Permission.DoesNotExist:
                 print(f'Warning: permission {app_label}.{codename} does not exist')
 
-def rollback_rbac(apps, schema_editor):
+def rollback(apps, schema_editor):
     Group = apps.get_model('auth', 'Group')
-    roles = ['Sales', 'Warehouse', 'Finance']
-    Group.objects.filter(name__in=roles).delete()
+    group_names = ['Sales', 'Warehouse', 'Finance']
+    Group.objects.filter(name__in=group_names).delete()
 
 class Migration(migrations.Migration):
 
     dependencies = [
+        # Essential core dependencies
         ('contenttypes', '0002_remove_content_type_name'),
         ('auth', '0012_alter_user_first_name_max_length'),
-        ('accounts', '0002_gearuser_address'),
+        
+        # Latest migration of each application
+        ('accounts', '0001_initial'),
         ('finance', '0001_initial'),
         ('inventory', '0001_initial'),
         ('orders', '0001_initial'),
     ]
 
     operations = [
-        migrations.RunPython(setup_rbac, reverse_code=rollback_rbac)
+        migrations.RunPython(setup_groups_perms, reverse_code=rollback)
     ]

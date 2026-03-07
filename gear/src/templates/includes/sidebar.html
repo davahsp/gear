@@ -121,12 +121,12 @@
                     {% endif %}
                 </div>
                 <div class="ml-3">
-                    <p class="text-sm font-medium text-gray-900">{{ request.user.get_full_name|default:'Tanpa Nama' }}</p>
+                    <p class="text-sm font-medium text-gray-900">{{ request.user.first_name|default:'Tanpa Nama' }}</p>
                     <p class="text-xs text-gray-500">
                         {% if user.is_superuser %}
                             Owner
                         {% else %}
-                            {{ user.groups.all.0.name|default:'Tanpa Role' }}
+                            {{ user.groups.all|join:", "|default:"Tanpa Role" }}
                         {% endif %}
                     </p>
                 </div>

@@ -2,13 +2,13 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Permission
 
-from .forms import GEARUserCreationForm, GEARUserChangeForm
-from .models import GEARUser
+from .forms import AccountCreationForm, AccountChangeForm
+from .models import Account
 
-class GEARUserAdmin(UserAdmin):
-    add_form = GEARUserCreationForm
-    form = GEARUserChangeForm
-    model = GEARUser
+class AccountAdmin(UserAdmin):
+    add_form = AccountCreationForm
+    form = AccountChangeForm
+    model = Account
 
     ordering = 'first_name', 'last_name'
 
@@ -35,7 +35,7 @@ class GEARUserAdmin(UserAdmin):
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
 
-admin.site.register(GEARUser, GEARUserAdmin)
+admin.site.register(Account, AccountAdmin)
 
 @admin.register(Permission)
 class PermissionAdmin(admin.ModelAdmin):

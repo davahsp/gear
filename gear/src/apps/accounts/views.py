@@ -1,15 +1,11 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView
 from django.views.generic import TemplateView, UpdateView, DeleteView, DetailView, CreateView
 from django.urls import reverse_lazy
-from django.conf import settings
-from django.core.exceptions import ValidationError
-from django.http.response import HttpResponseRedirect
-from django.db import transaction
 
 from .forms import AccountCreateForm, AccountUpdateForm, PhoneAuthenticationForm
-from .models import GEARUser
+from .models import Account
 
 class PhoneLoginView(LoginView):
 
@@ -36,14 +32,12 @@ class MyAccountUpdateView(LoginRequiredMixin, UpdateView):
 
 class IndexView(LoginRequiredMixin, TemplateView):
 
-    permission_required = 'accounts.view_gearuser'
-
     template_name = 'accounts/index.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context['accounts'] = GEARUser.objects.all() 
+        context['accounts'] = Account.objects.all() 
         context['groups'] = Group.objects.all()
 
         return context
@@ -69,7 +63,7 @@ class AccountCreateView(LoginRequiredMixin, CreateView):
     
 class AccountDetailView(LoginRequiredMixin, DetailView):
 
-    model = GEARUser
+    model = Account
     template_name = 'accounts/detail.html'
 
 class AccountUpdateView(LoginRequiredMixin, UpdateView):
@@ -79,12 +73,12 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
 
     success_url = reverse_lazy('accounts:index')
 
-    model = GEARUser
+    model = Account
     
 class AccountDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('accounts:index')
     template_name = 'accounts/delete.html'
-    model = GEARUser
+    model = Account
 
 
 

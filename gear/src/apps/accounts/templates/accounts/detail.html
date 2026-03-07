@@ -36,13 +36,7 @@
             {% if object.is_superuser %}
                 Owner
             {% else %}
-                {% if object.groups.all %}
-                    {% for group in object.groups.all %}
-                        {{ group.name }}{% if not forloop.last %}, {% endif %}
-                    {% endfor %}
-                {% else %}
-                    Tanpa Role
-                {% endif %}
+                {{ user.groups.all|join:", "|default:"Tanpa Role" }}
             {% endif %}
         </p>
     </section>
