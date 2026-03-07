@@ -99,11 +99,14 @@
                         <span class="mr-3">👥</span> Akun Saya
                     </a>
                 </li>
-                <li>
-                    <a href="{% url 'accounts:index' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'accounts:index' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
-                        <span class="mr-3">👥</span> Akun Lain
-                    </a>
-                </li>
+
+                {% if perms.accounts.view_account %}
+                    <li>
+                        <a href="{% url 'accounts:index' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'accounts:index' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                            <span class="mr-3">👥</span> Akun Lain
+                        </a>
+                    </li>
+                {% endif %}
             </ul>
         </div>
     </nav>

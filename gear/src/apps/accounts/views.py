@@ -30,7 +30,10 @@ class MyAccountUpdateView(LoginRequiredMixin, UpdateView):
     def get_object(self, queryset=None):
         return self.request.user
 
-class IndexView(LoginRequiredMixin, TemplateView):
+class IndexView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
+
+    permission_required = 'accounts.view_account'
+    permission_denied_message = 'You do not have authorization to view all accounts'
 
     template_name = 'accounts/index.html'
 
@@ -42,8 +45,10 @@ class IndexView(LoginRequiredMixin, TemplateView):
 
         return context
     
-class AccountCreateView(LoginRequiredMixin, CreateView):
+class AccountCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     
+    permission_required = 'accounts.add_account'
+
     template_name = 'accounts/create.html'
     form_class = AccountCreateForm
     success_url = reverse_lazy('accounts:index')
@@ -61,12 +66,16 @@ class AccountCreateView(LoginRequiredMixin, CreateView):
 
         return initial
     
-class AccountDetailView(LoginRequiredMixin, DetailView):
+class AccountDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
+
+    permission_required = 'accounts.view_account'
 
     model = Account
     template_name = 'accounts/detail.html'
 
-class AccountUpdateView(LoginRequiredMixin, UpdateView):
+class AccountUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+
+    permission_required = 'accounts.change_account'
 
     form_class = AccountUpdateForm
     template_name = 'accounts/update.html'
@@ -75,7 +84,10 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
 
     model = Account
     
-class AccountDeleteView(LoginRequiredMixin, DeleteView):
+class AccountDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+
+    permission_required = 'accounts.delete_account'
+
     success_url = reverse_lazy('accounts:index')
     template_name = 'accounts/delete.html'
     model = Account
