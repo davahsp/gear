@@ -67,3 +67,10 @@ class Account(AbstractUser):
 
     def __str__(self):
         return self.get_full_name()
+    
+    class Meta:
+
+        permissions = [
+            ('togglestatus_account', 'Can activate and deactivate account'),
+            ('changepassword_account', 'Can change account password'),
+        ]
