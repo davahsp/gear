@@ -1,10 +1,11 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.models import Group
-from django.contrib.auth.views import LoginView
-from django.views.generic import TemplateView, UpdateView, DeleteView, DetailView, CreateView
+from django.contrib.auth.views import LoginView, PasswordChangeView
+from django.views.generic import TemplateView, UpdateView, DeleteView, DetailView, CreateView, FormView
+from django.views.generic.detail import SingleObjectMixin
 from django.urls import reverse_lazy
 
-from .forms import AccountCreateForm, AccountUpdateForm, PhoneAuthenticationForm
+from .forms import AccountCreateForm, AccountUpdateForm, MyAccountPasswordChangeForm, PhoneAuthenticationForm, AccountPasswordChangeForm
 from .models import Account
 
 class PhoneLoginView(LoginView):
@@ -23,12 +24,19 @@ class MyAccountDetailView(LoginRequiredMixin, DetailView):
         return self.request.user
 
 class MyAccountUpdateView(LoginRequiredMixin, UpdateView):
+
     form_class = AccountUpdateForm
     template_name = 'accounts/my-account-update.html'
     success_url = reverse_lazy('accounts:my-account')
 
     def get_object(self, queryset=None):
         return self.request.user
+    
+class MyAccountPasswordChangeView(PasswordChangeView):
+
+    form_class = MyAccountPasswordChangeForm
+    template_name = 'accounts/my-account-password-change.html'
+    success_url = reverse_lazy('accounts:my-account')
 
 class IndexView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
 
@@ -83,6 +91,31 @@ class AccountUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView)
     success_url = reverse_lazy('accounts:index')
 
     model = Account
+
+class AccountPasswordChangeView(SingleObjectMixin, FormView):
+    
+    form_class = AccountPasswordChangeForm
+    model = Account
+
+    template_name = 'accounts/account-password-change.html'
+    success_url = reverse_lazy('accounts:index')
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().post(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.object
+        return kwargs
+    
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form) 
     
 class AccountDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
 
@@ -91,6 +124,3 @@ class AccountDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
     success_url = reverse_lazy('accounts:index')
     template_name = 'accounts/delete.html'
     model = Account
-
-
-

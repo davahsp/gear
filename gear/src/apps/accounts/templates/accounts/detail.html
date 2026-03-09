@@ -11,11 +11,19 @@
             </a>
             <h1 class="text-4xl font-bold text-gray-900">Detail Akun</h1>
         </div>
-        <a href="{% url 'accounts:update' object.id %}">
-            <button class="bg-[#2D8A70] hover:bg-[#246e5a] text-white px-6 py-2 rounded-lg font-medium transition-colors">
-                Ubah Akun ✏️
-            </button>
-        </a>
+        <div class="flex items-center space-x-3">
+            <a href="{% url 'accounts:password-change' object.id %}">
+                <button type="button" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                    Ubah Password 🔑
+                </button>
+            </a>
+
+            <a href="{% url 'accounts:update' object.id %}">
+                <button type="button" class="bg-[#2D8A70] hover:bg-[#246e5a] text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                    Ubah Akun ✏️
+                </button>
+            </a>
+        </div>
     </div>
 
     <section class="bg-white border border-gray-200 rounded-lg shadow-sm p-8 flex flex-col items-center text-center">
