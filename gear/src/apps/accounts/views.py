@@ -1,7 +1,8 @@
+from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView, PasswordChangeView
-from django.views.generic import TemplateView, UpdateView, DeleteView, DetailView, CreateView, FormView
+from django.views.generic import View, TemplateView, UpdateView, DeleteView, DetailView, CreateView, FormView
 from django.views.generic.detail import SingleObjectMixin
 from django.urls import reverse_lazy
 
@@ -92,7 +93,9 @@ class AccountUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView)
 
     model = Account
 
-class AccountPasswordChangeView(SingleObjectMixin, FormView):
+class AccountPasswordChangeView(LoginRequiredMixin, PermissionRequiredMixin, SingleObjectMixin, FormView):
+
+    permission_required = 'accounts.changepassword_account'
     
     form_class = AccountPasswordChangeForm
     model = Account
@@ -124,3 +127,24 @@ class AccountDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
     success_url = reverse_lazy('accounts:index')
     template_name = 'accounts/delete.html'
     model = Account
+
+class AccountToggleStatusView(LoginRequiredMixin, PermissionRequiredMixin, SingleObjectMixin, View):
+
+    model = Account
+    http_method_names = ['post']
+
+    permission_required = 'accounts.togglestatus_account'
+    
+    # not part of mixin but rather self-defined
+    template_name = 'accounts/htmx/accounts-tables.html'
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        self.object.is_active = not self.object.is_active
+
+        self.object.save()
+
+        return render(request, self.template_name, self.get_context_data(
+            accounts = Account.objects.all(),
+            groups = Group.objects.all(),))

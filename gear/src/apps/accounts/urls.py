@@ -19,4 +19,5 @@ urlpatterns = [
     path('<pk>/update/', views.AccountUpdateView.as_view(), name='update'),
     path('<pk>/password-change/', views.AccountPasswordChangeView.as_view(), name='password-change'),
     path('<pk>/delete/', views.AccountDeleteView.as_view(), name='delete'),
+    path('<pk>/toggle-status/', views.AccountToggleStatusView.as_view(), name='toggle-status'),
 ]

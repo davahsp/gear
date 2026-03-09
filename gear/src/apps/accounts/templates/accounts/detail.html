@@ -12,17 +12,27 @@
             <h1 class="text-4xl font-bold text-gray-900">Detail Akun</h1>
         </div>
         <div class="flex items-center space-x-3">
-            <a href="{% url 'accounts:password-change' object.id %}">
-                <button type="button" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-                    Ubah Password 🔑
-                </button>
-            </a>
 
-            <a href="{% url 'accounts:update' object.id %}">
-                <button type="button" class="bg-[#2D8A70] hover:bg-[#246e5a] text-white px-6 py-2 rounded-lg font-medium transition-colors">
-                    Ubah Akun ✏️
-                </button>
-            </a>
+            {% if perms.accounts.changepassword_account %}
+
+                <a href="{% url 'accounts:password-change' object.id %}">
+                    <button type="button" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                        Ubah Password 🔑
+                    </button>
+                </a>
+
+            {% endif %}
+
+            {% if perms.accounts.change_account %}
+
+                <a href="{% url 'accounts:update' object.id %}">
+                    <button type="button" class="bg-[#2D8A70] hover:bg-[#246e5a] text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                        Ubah Akun ✏️
+                    </button>
+                </a>
+
+            {% endif %}
+            
         </div>
     </div>
 
@@ -44,7 +54,7 @@
             {% if object.is_superuser %}
                 Owner
             {% else %}
-                {{ user.groups.all|join:", "|default:"Tanpa Role" }}
+                {{ object.groups.all|join:", "|default:"Tanpa Role" }}
             {% endif %}
         </p>
     </section>
@@ -52,7 +62,7 @@
     <section class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
         <div class="px-8 py-5 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
             <h3 class="text-lg font-bold text-gray-800">Informasi Pribadi</h3>
-            {% if user.is_active %}
+            {% if object.is_active %}
                 <span class="px-3 py-1 inline-flex text-xs leading-4 font-medium rounded-full bg-green-100 text-green-700">
                     Aktif
                 </span>
