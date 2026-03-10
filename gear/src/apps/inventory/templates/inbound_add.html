@@ -1,0 +1,528 @@
+{% extends 'layout_app.html' %}
+
+{% block title %}Daftar Transaksi Barang Masuk - GEAR{% endblock %}
+
+{% block header_extra %}
+<div class="flex items-center justify-between">
+    <a href="{% url 'inventory:inbounds' %}"
+       class="flex items-center text-red-500 hover:text-red-600 font-medium text-sm transition-colors">
+        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Kembali
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<form method="post" id="inbound-form" novalidate>
+    {% csrf_token %}
+    {{ formset.management_form }}
+
+    <!-- Page title + Simpan button -->
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-black text-gray-900">Daftar Transaksi Barang Masuk</h1>
+        <button type="button" id="btn-simpan" onclick="handleSubmit()"
+                class="bg-[#2B9B6F] hover:bg-[#238a61] disabled:opacity-50 disabled:cursor-not-allowed
+                       text-white font-semibold px-8 py-3 rounded-xl text-sm transition-colors shadow-sm">
+            Simpan
+        </button>
+    </div>
+
+    <!-- Client-side error banner (hidden by default) -->
+    <div id="client-error-banner"
+         class="hidden mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+        <p id="client-error-text"></p>
+    </div>
+
+    <!-- Server-side form errors -->
+    {% if formset.non_form_errors %}
+    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+        {% for error in formset.non_form_errors %}
+        <p>{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Cards grid -->
+    <div id="cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        {% for form in formset %}
+        <div class="card-item bg-white rounded-2xl border border-gray-200 p-6 shadow-sm" data-form-index="{{ forloop.counter0 }}">
+
+            <!-- Card header -->
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-900">Tambah Bahan <span class="card-number">{{ forloop.counter }}</span></h2>
+                <div class="flex items-center gap-2">
+                    {% if forloop.counter > 1 %}
+                    <button type="button" onclick="removeCard(this)"
+                            class="text-gray-400 hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                    {% endif %}
+                    <button type="button" onclick="handleAddCard()"
+                            class="flex items-center gap-1 bg-[#2B308B] hover:bg-[#232874] text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Tambah
+                    </button>
+                </div>
+            </div>
+
+            <!-- Formset DELETE field (hidden) -->
+            {% if form.DELETE %}
+            {{ form.DELETE }}
+            {% endif %}
+
+            <!-- Fields -->
+            <div class="space-y-5">
+
+                <!-- Jenis Bahan Baku -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">
+                        Jenis Bahan Baku
+                    </label>
+                    <div class="relative">
+                        {{ form.raw_material }}
+                        <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+                    {% if form.raw_material.errors %}
+                    <p class="mt-1 text-xs text-red-500">{{ form.raw_material.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Nama Supplier -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">
+                        Nama Supplier
+                    </label>
+                    <div class="relative">
+                        {{ form.supplier }}
+                        <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+                    {% if form.supplier.errors %}
+                    <p class="mt-1 text-xs text-red-500">{{ form.supplier.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Jumlah + Satuan -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">
+                        Jumlah
+                    </label>
+                    <div class="flex gap-3">
+                        {{ form.quantity }}
+                        <div class="flex-shrink-0 flex items-center px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-sm font-medium text-gray-700">
+                            <span class="unit-display">kg</span>
+                        </div>
+                    </div>
+                    {% if form.quantity.errors %}
+                    <p class="mt-1 text-xs text-red-500">{{ form.quantity.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Tanggal Diterima -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">
+                        Tanggal Diterima
+                    </label>
+                    <div class="relative">
+                        {{ form.receive_date }}
+                        <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                            
+                        </div>
+                    </div>
+                    {% if form.receive_date.errors %}
+                    <p class="mt-1 text-xs text-red-500">{{ form.receive_date.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div><!-- end card -->
+        {% endfor %}
+
+    </div><!-- end cards-container -->
+
+</form>
+
+<!-- Confirmation modal -->
+<div id="confirm-modal"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div class="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full mx-4">
+        <h2 class="text-lg font-bold text-gray-900 mb-2">Konfirmasi Barang Masuk</h2>
+        <p class="text-sm text-gray-600 mb-6">Apakah data yang Anda masukkan sudah benar?</p>
+        <div class="flex justify-end gap-3">
+            <button type="button" onclick="closeModal()"
+                    class="px-5 py-2 text-sm font-semibold text-white bg-[#2B308B] hover:bg-[#232874] rounded-lg transition-colors">
+                Periksa Lagi
+            </button>
+            <button type="button" id="btn-confirm" onclick="confirmSubmit()"
+                    class="px-5 py-2 text-sm font-semibold text-white bg-[#2B9B6F] hover:bg-[#238a61] rounded-lg transition-colors">
+                Ya, Simpan
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Data from server
+    const RAW_MATERIALS = {{ raw_materials_json|safe }};
+    const SUPPLIERS = {{ suppliers_json|safe }};
+    const UNITS_MAP = {{ units_map_json|safe }};
+    const FORM_PREFIX = 'inbound';
+
+    // --- Populate select options ---
+    function populateSelects() {
+        // Populate initial forms
+        const initialSelects = document.querySelectorAll('select[name*="-raw_material"]');
+        initialSelects.forEach(select => {
+            // Build unit lookup: { id: unit }
+            const unitMap = {};
+            RAW_MATERIALS.forEach(rm => { unitMap[rm.id] = rm.unit; });
+
+            // Set data-unit on every option (server-rendered or JS-created)
+            Array.from(select.options).forEach(opt => {
+                if (opt.value && unitMap[opt.value]) {
+                    opt.dataset.unit = unitMap[opt.value];
+                }
+            });
+
+            // Add change event listener
+            select.addEventListener('change', function() {
+                updateUnitForCard(this.closest('.card-item'));
+            });
+            // Update unit display for this card on page load
+            updateUnitForCard(select.closest('.card-item'));
+        });
+
+        const supplierSelects = document.querySelectorAll('select[name*="-supplier"]');
+        supplierSelects.forEach(select => {
+            if (select.options.length === 1) { // Only placeholder exists
+                SUPPLIERS.forEach(sup => {
+                    const opt = document.createElement('option');
+                    opt.value = sup.id;
+                    opt.textContent = sup.name;
+                    select.appendChild(opt);
+                });
+            }
+        });
+    }
+
+    // --- Update unit display for a card ---
+    function updateUnitForCard(card) {
+        const rawMatSelect = card.querySelector('select[name*="-raw_material"]');
+        const unitDisplay = card.querySelector('.unit-display');
+        if (rawMatSelect && unitDisplay) {
+            const selectedOption = rawMatSelect.options[rawMatSelect.selectedIndex];
+            const unit = selectedOption.dataset?.unit || 'kg';
+            unitDisplay.textContent = unit;
+        }
+    }
+
+    // --- Get management form data ---
+    function getTotalForms() {
+        return parseInt(document.getElementById(`id_${FORM_PREFIX}-TOTAL_FORMS`).value);
+    }
+
+    function setTotalForms(val) {
+        document.getElementById(`id_${FORM_PREFIX}-TOTAL_FORMS`).value = val;
+    }
+
+    // --- Update card numbers ---
+    function updateCardNumbers() {
+        const cards = document.querySelectorAll('#cards-container .card-item');
+        cards.forEach((card, i) => {
+            const numberSpan = card.querySelector('.card-number');
+            if (numberSpan) numberSpan.textContent = i + 1;
+        });
+    }
+
+    // --- Get all form data from a card ---
+    function getFormDataFromCard(card) {
+        const index = card.dataset.formIndex;
+        if (!index) return null;
+        
+        const rawMatSelect = card.querySelector(`select[name="${FORM_PREFIX}-${index}-raw_material"]`);
+        const supplierSelect = card.querySelector(`select[name="${FORM_PREFIX}-${index}-supplier"]`);
+        const qtyInput = card.querySelector(`input[name="${FORM_PREFIX}-${index}-quantity"]`);
+        const dateInput = card.querySelector(`input[name="${FORM_PREFIX}-${index}-receive_date"]`);
+        
+        return {
+            raw_material: rawMatSelect?.value || '',
+            supplier: supplierSelect?.value || '',
+            quantity: qtyInput?.value || '',
+            receive_date: dateInput?.value || '',
+        };
+    }
+
+    // --- Field-level error helpers ---
+    function showFieldError(fieldEl, msg) {
+        fieldEl.classList.remove('border-gray-300');
+        fieldEl.classList.add('border-red-500', 'field-error-border');
+        // fieldEl -> wrapper div (div.relative / div.flex) -> field container div
+        const fieldContainer = fieldEl.parentElement.parentElement;
+        const existing = fieldContainer.querySelector('.field-error');
+        if (existing) existing.remove();
+        const err = document.createElement('p');
+        err.className = 'field-error mt-1 text-xs text-red-500';
+        err.textContent = msg;
+        fieldContainer.appendChild(err);
+    }
+
+    function clearAllFieldErrors() {
+        document.querySelectorAll('.field-error').forEach(el => el.remove());
+        document.querySelectorAll('.field-error-border').forEach(el => {
+            el.classList.remove('border-red-500', 'field-error-border');
+            el.classList.add('border-gray-300');
+        });
+    }
+
+    // --- Validate all forms ---
+    function validateAllForms() {
+        clearAllFieldErrors();
+        const cards = document.querySelectorAll('#cards-container .card-item');
+        let filledCount = 0;
+        let hasErrors = false;
+
+        cards.forEach((card) => {
+            const index = card.dataset.formIndex;
+            if (index === undefined) return;
+
+            const rawMatSelect  = card.querySelector(`select[name="${FORM_PREFIX}-${index}-raw_material"]`);
+            const supplierSelect = card.querySelector(`select[name="${FORM_PREFIX}-${index}-supplier"]`);
+            const qtyInput      = card.querySelector(`input[name="${FORM_PREFIX}-${index}-quantity"]`);
+            const dateInput     = card.querySelector(`input[name="${FORM_PREFIX}-${index}-receive_date"]`);
+
+            const hasData = [rawMatSelect?.value, supplierSelect?.value, qtyInput?.value, dateInput?.value]
+                .some(v => v && v.trim() !== '');
+            if (!hasData) return;
+
+            filledCount++;
+
+            if (!dateInput?.value.trim()) {
+                showFieldError(dateInput, 'Tanggal Diterima wajib diisi.');
+                hasErrors = true;
+            }
+            if (!rawMatSelect?.value.trim()) {
+                showFieldError(rawMatSelect, 'Jenis Bahan Baku wajib dipilih.');
+                hasErrors = true;
+            }
+            if (!supplierSelect?.value.trim()) {
+                showFieldError(supplierSelect, 'Nama Supplier wajib dipilih.');
+                hasErrors = true;
+            }
+            if (!qtyInput?.value.trim()) {
+                showFieldError(qtyInput, 'Jumlah wajib diisi.');
+                hasErrors = true;
+            } else if (parseInt(qtyInput.value) <= 0) {
+                showFieldError(qtyInput, 'Jumlah harus lebih dari 0.');
+                hasErrors = true;
+            }
+        });
+
+        if (filledCount === 0) return { valid: false, emptyAll: true };
+        if (hasErrors)        return { valid: false, emptyAll: false };
+        return { valid: true };
+    }
+
+    function showError(msg) {
+        const banner = document.getElementById('client-error-banner');
+        document.getElementById('client-error-text').textContent = msg;
+        banner.classList.remove('hidden');
+        banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function hideError() {
+        document.getElementById('client-error-banner').classList.add('hidden');
+    }
+
+    // --- Add card ---
+    function handleAddCard() {
+        const total = getTotalForms();
+        const container = document.getElementById('cards-container');
+
+        // Build new card HTML
+        const newCard = document.createElement('div');
+        newCard.className = 'card-item bg-white rounded-2xl border border-gray-200 p-6 shadow-sm';
+        newCard.setAttribute('data-form-index', total);
+        newCard.innerHTML = `
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-900">Tambah Bahan <span class="card-number">${total + 1}</span></h2>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="removeCard(this)"
+                            class="text-gray-400 hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                    <button type="button" onclick="handleAddCard()"
+                            class="flex items-center gap-1 bg-[#2B308B] hover:bg-[#232874] text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Tambah
+                    </button>
+                </div>
+            </div>
+            <div class="space-y-5">
+                <!-- Jenis Bahan Baku -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">Jenis Bahan Baku</label>
+                    <div class="relative">
+                        <select name="${FORM_PREFIX}-${total}-raw_material"
+                                class="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#2B308B] appearance-none bg-white cursor-pointer">
+                            <option value="">-- Pilih bahan baku --</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nama Supplier -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">Nama Supplier</label>
+                    <div class="relative">
+                        <select name="${FORM_PREFIX}-${total}-supplier"
+                                class="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#2B308B] appearance-none bg-white cursor-pointer">
+                            <option value="">-- Pilih supplier --</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Jumlah + Satuan -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">Jumlah</label>
+                    <div class="flex gap-3">
+                        <input type="number" name="${FORM_PREFIX}-${total}-quantity" min="1" placeholder="ex: 2000"
+                               class="flex-grow border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#2B308B]">
+                        <div class="flex-shrink-0 flex items-center px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-sm font-medium text-gray-700">
+                            <span class="unit-display">kg</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tanggal Diterima -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">Tanggal Diterima</label>
+                    <div class="relative">
+                        <input type="date" name="${FORM_PREFIX}-${total}-receive_date"
+                               class="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#2B308B]">
+                        <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.appendChild(newCard);
+        
+        // Populate the new card's selects
+        const newRawMatSelect = newCard.querySelector(`select[name="${FORM_PREFIX}-${total}-raw_material"]`);
+        const newSupplierSelect = newCard.querySelector(`select[name="${FORM_PREFIX}-${total}-supplier"]`);
+        
+        RAW_MATERIALS.forEach(rm => {
+            const opt = document.createElement('option');
+            opt.value = rm.id;
+            opt.textContent = rm.name;
+            opt.dataset.unit = rm.unit;
+            newRawMatSelect.appendChild(opt);
+        });
+        
+        // Add change event listener for unit update
+        newRawMatSelect.addEventListener('change', function() {
+            updateUnitForCard(this.closest('.card-item'));
+        });
+        
+        SUPPLIERS.forEach(sup => {
+            const opt = document.createElement('option');
+            opt.value = sup.id;
+            opt.textContent = sup.name;
+            newSupplierSelect.appendChild(opt);
+        });
+        
+        setTotalForms(total + 1);
+        updateCardNumbers();
+    }
+
+    // --- Remove card ---
+    function removeCard(btn) {
+        const card = btn.closest('.card-item');
+        const container = document.getElementById('cards-container');
+
+        // Don't remove if only one card remains
+        if (container.querySelectorAll('.card-item').length <= 1) {
+            showError('Minimal harus ada satu kartu transaksi.');
+            return;
+        }
+
+        card.remove();
+        setTotalForms(container.querySelectorAll('.card-item').length);
+        updateCardNumbers();
+    }
+
+    // --- Handle submit ---
+    function handleSubmit() {
+        const validation = validateAllForms();
+        if (!validation.valid) {
+            if (validation.emptyAll) {
+                showError('Silakan isi minimal satu transaksi barang masuk.');
+            } else {
+                hideError();
+                const firstError = document.querySelector('.field-error');
+                if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return;
+        }
+        hideError();
+        document.getElementById('confirm-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('confirm-modal').classList.add('hidden');
+    }
+
+    function confirmSubmit() {
+        // Disable buttons
+        document.getElementById('btn-confirm').disabled = true;
+        document.getElementById('btn-confirm').textContent = 'Menyimpan...';
+        document.getElementById('btn-simpan').disabled = true;
+        document.getElementById('inbound-form').submit();
+    }
+
+    // Close modal on backdrop click
+    document.getElementById('confirm-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    // Initialize: populate select dropdowns on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        populateSelects();
+    });
+</script>
+{% endblock %}
+
+

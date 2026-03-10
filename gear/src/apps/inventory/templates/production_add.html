@@ -1,0 +1,480 @@
+{% extends 'layout_app.html' %}
+
+{% block title %}Daftar Produksi Harian - GEAR{% endblock %}
+
+{% block header_extra %}
+<div class="flex items-center justify-between">
+    <a href="{% url 'inventory:production' %}"
+       class="flex items-center text-red-500 hover:text-red-600 font-medium text-sm transition-colors">
+        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Kembali
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<form method="post" id="production-form" novalidate>
+    {% csrf_token %}
+    {{ formset.management_form }}
+
+    <!-- Page title + Simpan button -->
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-black text-gray-900">Daftar Produksi Harian</h1>
+        <button type="button" id="btn-simpan" onclick="handleSubmit()"
+                class="bg-[#2B9B6F] hover:bg-[#238a61] disabled:opacity-50 disabled:cursor-not-allowed
+                       text-white font-semibold px-8 py-3 rounded-xl text-sm transition-colors shadow-sm">
+            Simpan Produksi
+        </button>
+    </div>
+
+    <!-- Client-side error banner -->
+    <div id="client-error-banner"
+         class="hidden mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm whitespace-pre-line">
+        <p id="client-error-text"></p>
+    </div>
+
+    <!-- Server-side messages -->
+    {% if messages %}
+    <div class="mb-6 space-y-2">
+        {% for message in messages %}
+        <div class="flex items-center gap-3 p-4 rounded-xl border text-sm font-medium
+            {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800
+            {% elif message.tags == 'error' %}bg-red-50 border-red-200 text-red-800
+            {% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Formset non-field errors -->
+    {% if formset.non_form_errors %}
+    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+        {% for error in formset.non_form_errors %}<p>{{ error }}</p>{% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Cards grid -->
+    <div id="cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        {% for form in formset %}
+        <div class="card-item bg-white rounded-2xl border border-gray-200 p-6 shadow-sm"
+             data-form-index="{{ forloop.counter0 }}">
+
+            <!-- Card header -->
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-900">
+                    Tambah Barang Jadi <span class="card-number">{{ forloop.counter }}</span>
+                </h2>
+                <div class="flex items-center gap-2">
+                    {% if forloop.counter > 1 %}
+                    <button type="button" onclick="removeCard(this)"
+                            class="text-gray-400 hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                    {% endif %}
+                    <button type="button" onclick="handleAddCard()"
+                            class="flex items-center gap-1 bg-[#2B308B] hover:bg-[#232874] text-white
+                                   text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Tambah
+                    </button>
+                </div>
+            </div>
+
+            {% if form.DELETE %}{{ form.DELETE }}{% endif %}
+
+            <div class="space-y-5">
+
+                <!-- Tipe Garam -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">Tipe Garam</label>
+                    <div class="relative">
+                        {{ form.product_type }}
+                        <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+                    {% if form.product_type.errors %}
+                    <p class="mt-1 text-xs text-red-500">{{ form.product_type.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Varian/SKU -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">Varian/SKU Produk (gram)</label>
+                    <div class="relative">
+                        {{ form.product_variant }}
+                        <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+                    {% if form.product_variant.errors %}
+                    <p class="mt-1 text-xs text-red-500">{{ form.product_variant.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Jumlah -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">Jumlah</label>
+                    {{ form.quantity }}
+                    <p class="mt-1 text-xs text-gray-400">Masukkan dalam satuan pcs</p>
+                    {% if form.quantity.errors %}
+                    <p class="mt-1 text-xs text-red-500">{{ form.quantity.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Tanggal Produksi -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">Tanggal Produksi</label>
+                    <div class="relative">
+                        {{ form.production_date }}
+                    </div>
+                    {% if form.production_date.errors %}
+                    <p class="mt-1 text-xs text-red-500">{{ form.production_date.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div><!-- end card -->
+        {% endfor %}
+
+    </div><!-- end cards-container -->
+</form>
+
+<!-- Confirmation modal -->
+<div id="confirm-modal"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div class="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full mx-4">
+        <h2 class="text-lg font-bold text-gray-900 mb-2">Konfirmasi Barang Jadi</h2>
+        <p class="text-sm text-gray-600 mb-6">Apakah data yang Anda masukkan sudah benar?</p>
+        <div class="flex justify-end gap-3">
+            <button type="button" onclick="closeModal()"
+                    class="px-5 py-2 text-sm font-semibold text-white bg-[#2B308B] hover:bg-[#232874] rounded-lg transition-colors">
+                Periksa Lagi
+            </button>
+            <button type="button" id="btn-confirm" onclick="confirmSubmit()"
+                    class="px-5 py-2 text-sm font-semibold text-white bg-[#2B9B6F] hover:bg-[#238a61] rounded-lg transition-colors">
+                Ya, Simpan
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // ── Data from server ───────────────────────────────────────────────────────
+    const PRODUCTS     = {{ variants_json|safe }};  // [{id, product_type, size_grams}, ...]
+    const FORM_PREFIX  = 'prod';
+    const TYPE_LABELS  = { SOFT: 'Garam Halus', HARD: 'Garam Kasar' };
+
+    // Build lookup maps
+    const variantTypeMap = {};   // id (string) → product_type
+    const variantTextMap = {};   // id (string) → display text (size_grams)
+    PRODUCTS.forEach(p => {
+        variantTypeMap[String(p.id)] = p.product_type;
+        variantTextMap[String(p.id)] = String(p.size_grams);
+    });
+
+    // ── Management form helpers ────────────────────────────────────────────────
+    function getTotalForms() {
+        return parseInt(document.getElementById(`id_${FORM_PREFIX}-TOTAL_FORMS`).value);
+    }
+    function setTotalForms(val) {
+        document.getElementById(`id_${FORM_PREFIX}-TOTAL_FORMS`).value = val;
+    }
+
+    // ── Filter variants by product_type ───────────────────────────────────────
+    function filterVariants(typeSelect, variantSelect, preservedValue) {
+        const selectedType = typeSelect.value;
+        const currentVal   = preservedValue !== undefined ? preservedValue : variantSelect.value;
+
+        // Rebuild variants dropdown
+        variantSelect.innerHTML = '<option value="">-- Pilih varian --</option>';
+        PRODUCTS.forEach(p => {
+            if (!selectedType || p.product_type === selectedType) {
+                const opt    = document.createElement('option');
+                opt.value    = p.id;
+                opt.textContent = p.size_grams;
+                opt.dataset.type = p.product_type;
+                if (String(p.id) === String(currentVal) &&
+                    (!selectedType || p.product_type === selectedType)) {
+                    opt.selected = true;
+                }
+                variantSelect.appendChild(opt);
+            }
+        });
+    }
+
+    // ── Initialise a single card ───────────────────────────────────────────────
+    function initCard(card) {
+        const typeSelect    = card.querySelector(`select[name*="-product_type"]`);
+        const variantSelect = card.querySelector(`select[name*="-product_variant"]`);
+        if (!typeSelect || !variantSelect) return;
+
+        // Preserve whatever server rendered as selected
+        const preservedVariant = variantSelect.value;
+
+        // Filter variants for the current type selection (or show all)
+        filterVariants(typeSelect, variantSelect, preservedVariant);
+
+        // React to type changes
+        typeSelect.addEventListener('change', () => {
+            filterVariants(typeSelect, variantSelect);
+        });
+    }
+
+    // ── Card numbers ──────────────────────────────────────────────────────────
+    function updateCardNumbers() {
+        document.querySelectorAll('#cards-container .card-item').forEach((card, i) => {
+            const span = card.querySelector('.card-number');
+            if (span) span.textContent = i + 1;
+        });
+    }
+
+    // ── Read form data from a card ────────────────────────────────────────────
+    function getFormDataFromCard(card) {
+        const idx = card.dataset.formIndex;
+        if (idx === undefined) return null;
+        return {
+            product_type:    card.querySelector(`select[name="${FORM_PREFIX}-${idx}-product_type"]`)?.value   || '',
+            product_variant: card.querySelector(`select[name="${FORM_PREFIX}-${idx}-product_variant"]`)?.value || '',
+            quantity:        card.querySelector(`input[name="${FORM_PREFIX}-${idx}-quantity"]`)?.value         || '',
+            production_date: card.querySelector(`input[name="${FORM_PREFIX}-${idx}-production_date"]`)?.value  || '',
+        };
+    }
+
+    // ── Field-level error helpers ─────────────────────────────────────────────
+    function showFieldError(fieldEl, msg) {
+        fieldEl.classList.remove('border-gray-300');
+        fieldEl.classList.add('border-red-500', 'field-error-border');
+        // If field is inside a .relative wrapper, go up two levels; otherwise one
+        const parent = fieldEl.parentElement;
+        const fieldContainer = parent.classList.contains('relative') ? parent.parentElement : parent;
+        const existing = fieldContainer.querySelector('.field-error');
+        if (existing) existing.remove();
+        const err = document.createElement('p');
+        err.className = 'field-error mt-1 text-xs text-red-500';
+        err.textContent = msg;
+        fieldContainer.appendChild(err);
+    }
+
+    function clearAllFieldErrors() {
+        document.querySelectorAll('.field-error').forEach(el => el.remove());
+        document.querySelectorAll('.field-error-border').forEach(el => {
+            el.classList.remove('border-red-500', 'field-error-border');
+            el.classList.add('border-gray-300');
+        });
+    }
+
+    // ── Client-side validation ────────────────────────────────────────────────
+    function validateAllForms() {
+        clearAllFieldErrors();
+        const cards = document.querySelectorAll('#cards-container .card-item');
+        let filledCount = 0;
+        let hasErrors = false;
+        const seenVariants = new Set();
+
+        cards.forEach((card) => {
+            const idx = card.dataset.formIndex;
+            if (idx === undefined) return;
+
+            const typeSelect    = card.querySelector(`select[name="${FORM_PREFIX}-${idx}-product_type"]`);
+            const variantSelect = card.querySelector(`select[name="${FORM_PREFIX}-${idx}-product_variant"]`);
+            const qtyInput      = card.querySelector(`input[name="${FORM_PREFIX}-${idx}-quantity"]`);
+            const dateInput     = card.querySelector(`input[name="${FORM_PREFIX}-${idx}-production_date"]`);
+
+            const hasData = [typeSelect?.value, variantSelect?.value, qtyInput?.value, dateInput?.value]
+                .some(v => v && v.trim() !== '');
+            if (!hasData) return;
+
+            filledCount++;
+
+            if (!typeSelect?.value.trim()) {
+                showFieldError(typeSelect, 'Tipe Garam wajib dipilih.');
+                hasErrors = true;
+            }
+            if (!variantSelect?.value.trim()) {
+                showFieldError(variantSelect, 'Varian/SKU wajib dipilih.');
+                hasErrors = true;
+            } else if (seenVariants.has(variantSelect.value)) {
+                showFieldError(variantSelect, 'Varian ini sudah digunakan di item lain.');
+                hasErrors = true;
+            } else {
+                seenVariants.add(variantSelect.value);
+            }
+            if (!qtyInput?.value.trim()) {
+                showFieldError(qtyInput, 'Jumlah wajib diisi.');
+                hasErrors = true;
+            } else if (parseInt(qtyInput.value) <= 0) {
+                showFieldError(qtyInput, 'Jumlah harus lebih dari 0.');
+                hasErrors = true;
+            }
+        });
+
+        if (filledCount === 0) return { valid: false, emptyAll: true };
+        if (hasErrors)        return { valid: false, emptyAll: false };
+        return { valid: true };
+    }
+
+    function showError(msg) {
+        const banner = document.getElementById('client-error-banner');
+        document.getElementById('client-error-text').textContent = msg;
+        banner.classList.remove('hidden');
+        banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    function hideError() {
+        document.getElementById('client-error-banner').classList.add('hidden');
+    }
+
+    // ── Add card ──────────────────────────────────────────────────────────────
+    function handleAddCard() {
+        const total     = getTotalForms();
+        const container = document.getElementById('cards-container');
+        const today     = new Date().toISOString().split('T')[0];
+
+        const newCard = document.createElement('div');
+        newCard.className = 'card-item bg-white rounded-2xl border border-gray-200 p-6 shadow-sm';
+        newCard.dataset.formIndex = total;
+
+        newCard.innerHTML = `
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-900">Tambah Barang Jadi <span class="card-number">${total + 1}</span></h2>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="removeCard(this)"
+                            class="text-gray-400 hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                    <button type="button" onclick="handleAddCard()"
+                            class="flex items-center gap-1 bg-[#2B308B] hover:bg-[#232874] text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Tambah
+                    </button>
+                </div>
+            </div>
+            <div class="space-y-5">
+                <!-- Tipe Garam -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">Tipe Garam</label>
+                    <div class="relative">
+                        <select name="${FORM_PREFIX}-${total}-product_type"
+                                class="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm text-gray-700
+                                       focus:outline-none focus:ring-2 focus:ring-[#2B308B] appearance-none bg-white cursor-pointer">
+                            <option value="">-- Pilih tipe garam --</option>
+                            <option value="SOFT">Garam Halus</option>
+                            <option value="HARD">Garam Kasar</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <!-- Varian/SKU -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">Varian/SKU Produk (gram)</label>
+                    <div class="relative">
+                        <select name="${FORM_PREFIX}-${total}-product_variant"
+                                class="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm text-gray-700
+                                       focus:outline-none focus:ring-2 focus:ring-[#2B308B] appearance-none bg-white cursor-pointer">
+                            <option value="">-- Pilih varian --</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <!-- Jumlah -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">Jumlah</label>
+                    <input type="number" name="${FORM_PREFIX}-${total}-quantity" min="1" placeholder="ex: 2000"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-700
+                                  focus:outline-none focus:ring-2 focus:ring-[#2B308B]">
+                    <p class="mt-1 text-xs text-gray-400">Masukkan dalam satuan pcs</p>
+                </div>
+                <!-- Tanggal Produksi -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-800 mb-2">Tanggal Produksi</label>
+                    <div class="relative">
+                        <input type="date" name="${FORM_PREFIX}-${total}-production_date" value="${today}"
+                               class="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-700
+                                      focus:outline-none focus:ring-2 focus:ring-[#2B308B]">
+                        <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+
+        container.appendChild(newCard);
+        initCard(newCard);
+        setTotalForms(total + 1);
+        updateCardNumbers();
+    }
+
+    // ── Remove card ───────────────────────────────────────────────────────────
+    function removeCard(btn) {
+        const container = document.getElementById('cards-container');
+        if (container.querySelectorAll('.card-item').length <= 1) {
+            showError('Minimal harus ada satu item produksi.');
+            return;
+        }
+        btn.closest('.card-item').remove();
+        setTotalForms(container.querySelectorAll('.card-item').length);
+        updateCardNumbers();
+    }
+
+    // ── Submit / modal ────────────────────────────────────────────────────────
+    function handleSubmit() {
+        hideError();
+        const validation = validateAllForms();
+        if (!validation.valid) {
+            if (validation.emptyAll) {
+                showError('Silakan isi minimal satu item produksi.');
+            } else {
+                const firstError = document.querySelector('.field-error');
+                if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return;
+        }
+        document.getElementById('confirm-modal').classList.remove('hidden');
+    }
+    function closeModal() {
+        document.getElementById('confirm-modal').classList.add('hidden');
+    }
+    function confirmSubmit() {
+        document.getElementById('btn-confirm').disabled    = true;
+        document.getElementById('btn-confirm').textContent = 'Menyimpan...';
+        document.getElementById('btn-simpan').disabled     = true;
+        document.getElementById('production-form').submit();
+    }
+
+    document.getElementById('confirm-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    // ── Bootstrap ─────────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('#cards-container .card-item').forEach(initCard);
+    });
+</script>
+{% endblock %}

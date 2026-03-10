@@ -18,6 +18,9 @@ class ProductVariant(models.Model):
     size_grams = models.IntegerField(validators=[MinValueValidator(1)])
     qty_in_stock = models.IntegerField(validators=[MinValueValidator(0)])
 
+    def __str__(self):
+        return str(self.size_grams)
+
     class Meta:
         constraints = [
             models.constraints.UniqueConstraint(
@@ -32,6 +35,9 @@ class RawMaterial(models.Model):
     unit = models.CharField(max_length=7)
     qty_in_stock = models.IntegerField(validators=[MinValueValidator(0)])
     last_restocked = models.DateField(null=True)
+
+    def __str__(self):
+        return self.name
 
 class DailyProduction(models.Model):
 
@@ -101,6 +107,9 @@ class Supplier(models.Model):
     address = models.CharField(max_length=127, null=True)
     last_transaction = models.DateField(null=True)
 
+    def __str__(self):
+        return self.name
+
     # Menambahkan field is_active untuk menandai apakah supplier masih aktif atau tidak
     is_active = models.BooleanField(default=True)
     created_at = models.DateField(auto_now_add=True)
@@ -165,6 +174,8 @@ class Purchase(models.Model):
     who_inputs = models.ForeignKey(to=AUTH_USER_MODEL,
                                    on_delete=models.PROTECT,
                                    related_name='purchase_inputs')
+
+    is_active = models.BooleanField(default=True)
 
 class PurchaseItem(models.Model):
 

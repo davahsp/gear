@@ -1,0 +1,35 @@
+[
+  {
+    "model": "inventory.supplier",
+    "pk": 1,
+    "fields": {
+      "name": "Toko Ilham Jaya",
+      "email": null,
+      "phone_number": "08123456789",
+      "address": "Jl. Raya Madura No. 12, Surabaya",
+      "last_transaction": null
+    }
+  },
+  {
+    "model": "inventory.supplier",
+    "pk": 2,
+    "fields": {
+      "name": "PT. Garam Nusantara",
+      "email": "info@garamnusantara.co.id",
+      "phone_number": "02112345678",
+      "address": "Jl. Industri No. 88, Jakarta Utara",
+      "last_transaction": null
+    }
+  },
+  {
+    "model": "inventory.supplier",
+    "pk": 3,
+    "fields": {
+      "name": "CV. Bahan Baku Sejahtera",
+      "email": null,
+      "phone_number": "08567890123",
+      "address": "Jl. Pasar Besar No. 35, Malang",
+      "last_transaction": null
+    }
+  }
+]

@@ -12,12 +12,12 @@
             </div>
             <ul class="space-y-1">
                 <li>
-                    <a href="{% url 'inventory:bahan-baku' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'inventory:bahan-baku' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                    <a href="{% url 'inventory:inbounds' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'inventory:bahan-baku' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
                         <span class="mr-3">📦</span> Bahan Baku
                     </a>
                 </li>
                 <li>
-                    <a href="{% url 'inventory:barang-jadi' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'inventory:barang-jadi' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                    <a href="{% url 'inventory:production' %}" class="flex items-center px-2 py-2 text-sm rounded-md transition-colors {% if request.resolver_match.view_name == 'inventory:barang-jadi' %}bg-blue-100 text-[#2B308B] font-semibold{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
                         <span class="mr-3">📦</span> Barang Jadi
                     </a>
                 </li>
