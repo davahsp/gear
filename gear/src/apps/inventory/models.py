@@ -7,16 +7,22 @@ import re
 
 AUTH_USER_MODEL = get_user_model()
 
-class ProductType(models.TextChoices):
 
+class ProductType(models.TextChoices):
     SOFT = 'SOFT', 'Soft'
     HARD = 'HARD', 'Hard'
 
+
 class ProductVariant(models.Model):
-    
     product_type = models.CharField(max_length=7, choices=ProductType.choices)
     size_grams = models.IntegerField(validators=[MinValueValidator(1)])
     qty_in_stock = models.IntegerField(validators=[MinValueValidator(0)])
+    reserved_stock = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+    default_price = models.IntegerField(
+        default=0, 
+        validators=[MinValueValidator(0)],
+        verbose_name="Harga Satuan Default"
+    )
 
     class Meta:
         constraints = [
@@ -26,32 +32,45 @@ class ProductVariant(models.Model):
             ),
         ]
 
-class RawMaterial(models.Model):
+    @property
+    def available_stock(self):
+        return self.qty_in_stock - self.reserved_stock
 
+    def __str__(self):
+        return f'Garam {self.get_product_type_display()} {self.size_grams}g'
+
+
+class RawMaterial(models.Model):
     name = models.CharField(max_length=31, unique=True)
     unit = models.CharField(max_length=7)
     qty_in_stock = models.IntegerField(validators=[MinValueValidator(0)])
     last_restocked = models.DateField(null=True)
 
-class DailyProduction(models.Model):
+    def __str__(self):
+        return self.name
 
+
+class DailyProduction(models.Model):
     production_date = models.DateField(default=date.today)
     notes = models.TextField(null=True)
+    who_inputs = models.ForeignKey(
+        to=AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name='daily_production_inputs'
+    )
 
-    who_inputs = models.ForeignKey(to=AUTH_USER_MODEL,
-                                   on_delete=models.PROTECT,
-                                   related_name='daily_production_inputs')
 
 class DailyProductionItem(models.Model):
-
-    daily_production = models.ForeignKey(to='DailyProduction',
-                                         on_delete=models.CASCADE,
-                                         related_name='items')
-    
-    product_variant = models.ForeignKey(to='ProductVariant',
-                                        on_delete=models.PROTECT,
-                                        related_name='daily_production_items')
-    
+    daily_production = models.ForeignKey(
+        to='DailyProduction',
+        on_delete=models.CASCADE,
+        related_name='items'
+    )
+    product_variant = models.ForeignKey(
+        to='ProductVariant',
+        on_delete=models.PROTECT,
+        related_name='daily_production_items'
+    )
     quantity = models.IntegerField(validators=[MinValueValidator(1)])
 
     class Meta:
@@ -62,16 +81,18 @@ class DailyProductionItem(models.Model):
             ),
         ]
 
-class DailyProductionRawItem(models.Model):
 
-    daily_production = models.ForeignKey(to='DailyProduction',
-                                         on_delete=models.CASCADE,
-                                         related_name='raw_items')
-    
-    raw_material = models.ForeignKey(to='RawMaterial',
-                                     on_delete=models.PROTECT,
-                                     related_name='daily_production_raw_items')
-    
+class DailyProductionRawItem(models.Model):
+    daily_production = models.ForeignKey(
+        to='DailyProduction',
+        on_delete=models.CASCADE,
+        related_name='raw_items'
+    )
+    raw_material = models.ForeignKey(
+        to='RawMaterial',
+        on_delete=models.PROTECT,
+        related_name='daily_production_raw_items'
+    )
     quantity = models.IntegerField(validators=[MinValueValidator(1)])
 
     class Meta:
@@ -82,8 +103,8 @@ class DailyProductionRawItem(models.Model):
             ),
         ]
 
-class Supplier(models.Model):
 
+class Supplier(models.Model):
     id = models.CharField(
         max_length=10,
         primary_key=True,
@@ -97,11 +118,11 @@ class Supplier(models.Model):
         }
     )
     email = models.EmailField(max_length=31, null=True)
-    phone_number = models.CharField(max_length=15,  null=True)
+    phone_number = models.CharField(max_length=15, null=True)
     address = models.CharField(max_length=127, null=True)
     last_transaction = models.DateField(null=True)
 
-    # Menambahkan field is_active untuk menandai apakah supplier masih aktif atau tidak
+    # Added from development branch
     is_active = models.BooleanField(default=True)
     created_at = models.DateField(auto_now_add=True)
 
@@ -150,34 +171,41 @@ class Supplier(models.Model):
             return ''
         return f"https://wa.me/{normalized_number}"
 
+    def __str__(self):
+        return self.name
+
+
 class Purchase(models.Model):
-
-    supplier = models.ForeignKey(to='Supplier',
-                                 null=True,
-                                 on_delete=models.SET_NULL,
-                                 related_name='purchases')
-    
+    supplier = models.ForeignKey(
+        to='Supplier',
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='purchases'
+    )
     total_price = models.IntegerField(validators=[MinValueValidator(0)])
-
     purchase_date = models.DateField(default=date.today)
     receive_date = models.DateField(default=date.today)
+    who_inputs = models.ForeignKey(
+        to=AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name='purchase_inputs'
+    )
+    is_active = models.BooleanField(default=True)
 
-    who_inputs = models.ForeignKey(to=AUTH_USER_MODEL,
-                                   on_delete=models.PROTECT,
-                                   related_name='purchase_inputs')
 
 class PurchaseItem(models.Model):
-
-    purchase = models.ForeignKey(to='Purchase',
-                                 on_delete=models.CASCADE,
-                                 related_name='items')
-    
-    raw_material = models.ForeignKey(to='RawMaterial',
-                                     on_delete=models.PROTECT,
-                                     related_name='purchase_items')
-    
+    purchase = models.ForeignKey(
+        to='Purchase',
+        on_delete=models.CASCADE,
+        related_name='items'
+    )
+    raw_material = models.ForeignKey(
+        to='RawMaterial',
+        on_delete=models.PROTECT,
+        related_name='purchase_items'
+    )
     quantity = models.IntegerField(validators=[MinValueValidator(1)])
-
+    
     # this represents the total price within a purchase item only
     # under almost every circumstances, base price * quantity = subtotal
     subtotal_price = models.IntegerField(validators=[MinValueValidator(0)])
@@ -189,5 +217,3 @@ class PurchaseItem(models.Model):
                 name='uniqueness of raw_material within a purchase'
             ),
         ]
-
-

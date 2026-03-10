@@ -1,0 +1,218 @@
+{% extends 'layout_app.html' %}
+
+{% block title %}Detail Transaksi Barang Masuk - GEAR{% endblock %}
+
+{% block header_extra %}
+<div class="flex items-center justify-between">
+    <span class="text-sm text-gray-500">Inventori / Bahan Baku / Detail Transaksi</span>
+</div>
+{% endblock %}
+
+{% block content %}
+
+{% if messages %}
+<div class="mb-6 space-y-2">
+    {% for message in messages %}
+    <div class="flex items-center gap-3 p-4 rounded-xl border text-sm font-medium
+        {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800
+        {% elif message.tags == 'error' %}bg-red-50 border-red-200 text-red-800
+        {% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %}">
+        {% if message.tags == 'success' %}
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        {% endif %}
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<a href="{% url 'inventory:inbounds' %}"
+   class="inline-flex items-center gap-1 text-sm text-[#2B308B] font-semibold hover:underline mb-5">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+    </svg>
+    Kembali
+</a>
+
+<h1 class="text-3xl font-black text-gray-900 mb-6">Daftar Transaksi Barang Masuk</h1>
+
+{% if not item.purchase.is_active %}
+<div class="flex items-center gap-3 p-4 mb-6 rounded-xl border bg-red-50 border-red-200 text-red-700 text-sm font-medium">
+    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M18.364 5.636l-12.728 12.728M5.636 5.636l12.728 12.728"/>
+    </svg>
+    Transaksi ini telah <strong class="mx-1">dihapus / dinonaktifkan</strong> dan tidak lagi mempengaruhi stok bahan baku.
+</div>
+{% endif %}
+
+<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+    <h2 class="text-lg font-bold text-gray-800 mb-6">Detail Bahan Baku</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <div class="bg-gray-50 rounded-xl p-5 space-y-4">
+            <h3 class="text-base font-bold text-gray-700 border-b border-gray-200 pb-2">Info Transaksi</h3>
+
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Tanggal Diterima</p>
+                <p class="text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg px-4 py-3">
+                    {{ item.purchase.receive_date|date:"d/m/Y" }}
+                </p>
+            </div>
+
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Nomor Referensi</p>
+                <p class="text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg px-4 py-3">
+                    RI/{{ item.purchase.receive_date|date:"dmy" }}/{{ item.purchase.pk|stringformat:"02d" }}
+                </p>
+            </div>
+
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Status</p>
+                <div class="bg-white border border-gray-200 rounded-lg px-4 py-3">
+                    {% if item.purchase.is_active %}
+                    <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-green-700">
+                        <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                        Aktif
+                    </span>
+                    {% else %}
+                    <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-red-600 line-through">
+                        <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                        Nonaktif
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Waktu Pencatatan</p>
+                <p class="text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg px-4 py-3">
+                    {{ item.purchase.purchase_date|date:"d/m/Y" }}
+                </p>
+            </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl p-5 space-y-4">
+            <h3 class="text-base font-bold text-gray-700 border-b border-gray-200 pb-2">Info Supplier</h3>
+
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Nama Supplier</p>
+                <p class="text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg px-4 py-3">
+                    {% if item.purchase.supplier %}{{ item.purchase.supplier.name }}{% else %}<span class="text-gray-400 italic">—</span>{% endif %}
+                </p>
+            </div>
+
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Alamat</p>
+                <p class="text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg px-4 py-3">
+                    {% if item.purchase.supplier.address %}{{ item.purchase.supplier.address }}{% else %}<span class="text-gray-400 italic">—</span>{% endif %}
+                </p>
+            </div>
+
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Kontak</p>
+                <p class="text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg px-4 py-3">
+                    {% if item.purchase.supplier.phone_number %}{{ item.purchase.supplier.phone_number }}{% else %}<span class="text-gray-400 italic">—</span>{% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl p-5 space-y-4">
+            <h3 class="text-base font-bold text-gray-700 border-b border-gray-200 pb-2">Info Bahan Baku</h3>
+
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Jenis Bahan Baku</p>
+                <p class="text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg px-4 py-3">
+                    {{ item.raw_material.name }}
+                </p>
+            </div>
+
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Satuan</p>
+                <p class="text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg px-4 py-3">
+                    {{ item.raw_material.unit }}
+                </p>
+            </div>
+
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Jumlah</p>
+                <p class="text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg px-4 py-3">
+                    {{ item.quantity }}
+                </p>
+            </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl p-5 space-y-4">
+            <h3 class="text-base font-bold text-gray-700 border-b border-gray-200 pb-2">Info User</h3>
+
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Nama Pencatat</p>
+                <p class="text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg px-4 py-3">
+                    {% with u=item.purchase.who_inputs %}
+                        {% if u.get_full_name %}{{ u.get_full_name }}{% else %}{{ u.phone_number }}{% endif %}
+                    {% endwith %}
+                </p>
+            </div>
+
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Kontak</p>
+                <p class="text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg px-4 py-3">
+                    {{ item.purchase.who_inputs.phone_number|default:"—" }}
+                </p>
+            </div>
+        </div>
+
+    </div></div><div class="flex items-center gap-3">
+    {% if item.purchase.is_active %}
+    <button type="button" onclick="document.getElementById('deleteModal').classList.remove('hidden')"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600
+                   text-sm font-semibold text-white hover:bg-red-700 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4h6v3M3 7h18"/>
+        </svg>
+        Hapus Transaksi
+    </button>
+    {% endif %}
+</div>
+
+{% if item.purchase.is_active %}
+<div id="deleteModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4">
+        <div class="flex justify-center mb-4">
+            <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center">
+                <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                </svg>
+            </div>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Hapus Transaksi?</h3>
+        <p class="text-sm text-gray-500 text-center mb-6">
+            Transaksi ini akan dinonaktifkan dan stok
+            <strong>{{ item.raw_material.name }}</strong> sebesar
+            <strong>{{ item.quantity }} {{ item.raw_material.unit }}</strong>
+            akan dikurangi kembali. Tindakan ini tidak dapat dibatalkan.
+        </p>
+        <div class="flex gap-3">
+            <button type="button"
+                    onclick="document.getElementById('deleteModal').classList.add('hidden')"
+                    class="flex-1 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors">
+                Batal
+            </button>
+            <form method="post" action="{% url 'inventory:inbound-delete' item.pk %}" class="flex-1">
+                {% csrf_token %}
+                <button type="submit"
+                        class="w-full py-2.5 rounded-xl bg-red-600 text-sm font-semibold text-white hover:bg-red-700 transition-colors">
+                    Ya, Hapus
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,444 @@
+{% extends 'layout_app.html' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+        <a href="{% url 'orders:order-list' %}" class="text-indigo-600 hover:text-indigo-800 flex items-center mb-4 text-sm">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Kembali ke Daftar Pesanan
+        </a>
+        <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="mb-4 p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Form -->
+    <form method="POST" id="order-form" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Form Errors -->
+        {% if form.non_field_errors %}
+        <div class="p-4 bg-red-100 text-red-800 rounded-lg">
+            {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% if formset.non_form_errors %}
+        <div class="p-4 bg-red-100 text-red-800 rounded-lg">
+            {% for error in formset.non_form_errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Order Info Card -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Informasi Pesanan</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Customer -->
+                <div>
+                    <label for="{{ form.customer.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Pelanggan <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.customer }}
+                    {% if form.customer.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.customer.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Order Date -->
+                <div>
+                    <label for="{{ form.order_date.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Tanggal Order <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.order_date }}
+                    {% if form.order_date.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.order_date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Payment Method -->
+                <div>
+                    <label for="{{ form.payment_method.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Metode Pembayaran <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.payment_method }}
+                    {% if form.payment_method.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.payment_method.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Card -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h2 class="text-lg font-bold text-gray-900">Daftar Item</h2>
+                <button type="button" id="add-item-btn" class="px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition-colors">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Tambah Item
+                </button>
+            </div>
+
+            {{ formset.management_form }}
+
+            <div id="items-container">
+                <table class="min-w-full divide-y divide-gray-200 border border-gray-200 border-collapse" id="items-table">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-2/5">Produk (SKU)</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase w-1/6">Jumlah</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase w-1/5">Harga Satuan</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase w-1/5">Subtotal</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-16">Hapus</th>
+                        </tr>
+                    </thead>
+                    <tbody id="items-body" class="divide-y divide-gray-200">
+                        {% for item_form in formset %}
+                        <tr class="item-row {% if item_form.errors %}bg-red-50{% endif %}" data-index="{{ forloop.counter0 }}">
+                            <td class="px-4 py-3">
+                                {{ item_form.id }}
+                                {{ item_form.product_variant }}
+                                {% if item_form.product_variant.errors %}
+                                <p class="text-xs text-red-600 mt-1">{{ item_form.product_variant.errors.0 }}</p>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3">
+                                {{ item_form.quantity }}
+                                {% if item_form.quantity.errors %}
+                                <p class="text-xs text-red-600 mt-1">{{ item_form.quantity.errors.0 }}</p>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3">
+                                {{ item_form.unit_price }}
+                                {% if item_form.unit_price.errors %}
+                                <p class="text-xs text-red-600 mt-1">{{ item_form.unit_price.errors.0 }}</p>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-right">
+                                <span class="row-subtotal text-sm font-medium text-gray-900">Rp 0</span>
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <div class="hidden">{{ item_form.DELETE }}</div>
+                                <button type="button" class="remove-item-btn text-red-500 hover:text-red-700" title="Hapus item">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="bg-gray-50">
+                        <tr>
+                            <td colspan="3" class="px-4 py-4 text-right text-sm font-bold text-gray-700">Estimasi Grand Total</td>
+                            <td class="px-4 py-4 text-right text-lg font-bold text-indigo-700" id="grand-total">Rp 0</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="flex items-center justify-end gap-4">
+            <a href="{% url 'orders:order-list' %}" class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                Batal
+            </a>
+            <button type="button" id="submit-btn" onclick="handleSubmit()" class="px-8 py-2.5 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                {{ submit_label|default:"Simpan Pesanan" }}
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Confirmation modal -->
+<div id="confirm-modal"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div class="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full mx-4">
+        <h2 class="text-lg font-bold text-gray-900 mb-2" id="modal-title">Konfirmasi Pesanan</h2>
+        <p class="text-sm text-gray-600 mb-6" id="modal-message">Apakah data pesanan sudah benar?</p>
+        <div class="flex justify-end gap-3">
+            <button type="button" onclick="closeModal()"
+                    class="px-5 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                Periksa Lagi
+            </button>
+            <button type="button" id="btn-confirm" onclick="performSubmit()"
+                    class="px-5 py-2 text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 rounded-lg transition-colors">
+                Ya, Simpan
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<style>
+    /* Add vertical grid lines between table columns */
+    #items-table {
+        border-collapse: collapse;
+    }
+    #items-table th,
+    #items-table td {
+        border-right: 1px solid rgba(229, 231, 235, 1); /* tailwind gray-200 */
+    }
+    #items-table th:last-child,
+    #items-table td:last-child {
+        border-right: none;
+    }
+
+    /* Make number inputs slightly thinner for better layout */
+    #items-table input[type="number"] {
+        width: 5.5rem;
+    }
+</style>
+<script>
+const VARIANT_PRICES = {{ variant_prices|safe }};
+const FORMSET_PREFIX = 'items';
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize calculations
+    recalculateAll();
+    attachEventListeners();
+});
+
+function attachEventListeners() {
+    // Delegate events on items body
+    const tbody = document.getElementById('items-body');
+
+    tbody.addEventListener('change', function(e) {
+        if (e.target.classList.contains('item-variant')) {
+            const row = e.target.closest('.item-row');
+            autoFillPrice(row);
+            recalculateRow(row);
+        }
+        if (e.target.classList.contains('item-qty') || e.target.classList.contains('item-price')) {
+            const row = e.target.closest('.item-row');
+            recalculateRow(row);
+        }
+    });
+
+    tbody.addEventListener('input', function(e) {
+        if (e.target.classList.contains('item-qty') || e.target.classList.contains('item-price')) {
+            const row = e.target.closest('.item-row');
+            recalculateRow(row);
+        }
+    });
+
+    tbody.addEventListener('click', function(e) {
+        const btn = e.target.closest('.remove-item-btn');
+        if (btn) {
+            removeItem(btn.closest('.item-row'));
+        }
+    });
+
+    // Add item button
+    document.getElementById('add-item-btn').addEventListener('click', addItem);
+}
+
+function autoFillPrice(row) {
+    const select = row.querySelector('.item-variant');
+    const priceInput = row.querySelector('.item-price');
+    const variantId = select.value;
+
+    if (variantId && VARIANT_PRICES[variantId] !== undefined) {
+        priceInput.value = VARIANT_PRICES[variantId];
+    }
+}
+
+function recalculateRow(row) {
+    const qty = parseInt(row.querySelector('.item-qty').value) || 0;
+    const price = parseInt(row.querySelector('.item-price').value) || 0;
+    const subtotal = qty * price;
+    row.querySelector('.row-subtotal').textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+    recalculateGrandTotal();
+}
+
+function recalculateGrandTotal() {
+    let total = 0;
+    document.querySelectorAll('.item-row').forEach(function(row) {
+        // Skip deleted rows
+        const deleteCheckbox = row.querySelector('[id$="-DELETE"]');
+        if (deleteCheckbox && deleteCheckbox.checked) return;
+        if (row.style.display === 'none') return;
+
+        const qty = parseInt(row.querySelector('.item-qty').value) || 0;
+        const price = parseInt(row.querySelector('.item-price').value) || 0;
+        total += qty * price;
+    });
+    document.getElementById('grand-total').textContent = 'Rp ' + total.toLocaleString('id-ID');
+}
+
+function recalculateAll() {
+    document.querySelectorAll('.item-row').forEach(function(row) {
+        recalculateRow(row);
+    });
+}
+
+function addItem() {
+    const totalFormsInput = document.getElementById('id_' + FORMSET_PREFIX + '-TOTAL_FORMS');
+    const currentCount = parseInt(totalFormsInput.value);
+
+    const tbody = document.getElementById('items-body');
+    const firstRow = tbody.querySelector('.item-row');
+    if (!firstRow) return;
+
+    const newRow = firstRow.cloneNode(true);
+    newRow.dataset.index = currentCount;
+    newRow.classList.remove('bg-red-50');
+    newRow.style.display = '';
+
+    // Update all input names and ids
+    newRow.querySelectorAll('input, select, textarea').forEach(function(el) {
+        if (el.name) {
+            el.name = el.name.replace(/-\d+-/, '-' + currentCount + '-');
+        }
+        if (el.id) {
+            el.id = el.id.replace(/-\d+-/, '-' + currentCount + '-');
+        }
+    });
+
+    // Clear values
+    newRow.querySelectorAll('input[type="number"]').forEach(function(el) {
+        el.value = el.name.includes('quantity') ? '1' : '';
+    });
+    newRow.querySelectorAll('select').forEach(function(el) {
+        el.selectedIndex = 0;
+    });
+
+    // Clear hidden id field (new form should have no id)
+    const idInput = newRow.querySelector('input[name$="-id"]');
+    if (idInput) idInput.value = '';
+
+    // Uncheck DELETE
+    const deleteCheckbox = newRow.querySelector('input[name$="-DELETE"]');
+    if (deleteCheckbox) deleteCheckbox.checked = false;
+
+    // Clear errors
+    newRow.querySelectorAll('.text-red-600').forEach(function(el) { el.remove(); });
+
+    // Reset subtotal
+    newRow.querySelector('.row-subtotal').textContent = 'Rp 0';
+
+    tbody.appendChild(newRow);
+    totalFormsInput.value = currentCount + 1;
+}
+
+function removeItem(row) {
+    const tbody = document.getElementById('items-body');
+    const visibleRows = Array.from(tbody.querySelectorAll('.item-row')).filter(function(r) {
+        return r.style.display !== 'none';
+    });
+
+    if (visibleRows.length <= 1) {
+        alert('Pesanan harus memiliki minimal 1 item.');
+        return;
+    }
+
+    // If existing item (has id), mark for deletion; otherwise remove from DOM
+    const idInput = row.querySelector('input[name$="-id"]');
+    if (idInput && idInput.value) {
+        const deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
+        if (deleteCheckbox) deleteCheckbox.checked = true;
+        row.style.display = 'none';
+    } else {
+        row.remove();
+        // Reindex remaining forms
+        reindexForms();
+    }
+    recalculateGrandTotal();
+}
+
+function reindexForms() {
+    const tbody = document.getElementById('items-body');
+    const rows = tbody.querySelectorAll('.item-row');
+    const totalFormsInput = document.getElementById('id_' + FORMSET_PREFIX + '-TOTAL_FORMS');
+
+    rows.forEach(function(row, index) {
+        row.dataset.index = index;
+        row.querySelectorAll('input, select, textarea').forEach(function(el) {
+            if (el.name) {
+                el.name = el.name.replace(/-\d+-/, '-' + index + '-');
+            }
+            if (el.id) {
+                el.id = el.id.replace(/-\d+-/, '-' + index + '-');
+            }
+        });
+    });
+    totalFormsInput.value = rows.length;
+}
+
+function handleSubmit() {
+    // Client-side validation
+    const customerSelect = document.getElementById('{{ form.customer.id_for_label }}') || document.querySelector('[name="customer"]');
+    if (customerSelect && !customerSelect.value) {
+        alert('Pilih pelanggan terlebih dahulu.');
+        return;
+    }
+
+    const visibleRows = Array.from(document.querySelectorAll('.item-row')).filter(function(r) {
+        return r.style.display !== 'none';
+    });
+
+    let hasValidItem = false;
+    for (const row of visibleRows) {
+        const deleteCheckbox = row.querySelector('[id$="-DELETE"]');
+        if (deleteCheckbox && deleteCheckbox.checked) continue;
+
+        const variant = row.querySelector('.item-variant');
+        const qty = row.querySelector('.item-qty');
+        if (variant && variant.value && qty && parseInt(qty.value) > 0) {
+            hasValidItem = true;
+        }
+    }
+
+    if (!hasValidItem) {
+        alert('Pesanan harus memiliki minimal 1 item dengan jumlah > 0.');
+        return;
+    }
+
+    // Show confirmation modal
+    const isEdit = '{{ is_edit|default:"" }}';
+    const modalTitle = document.getElementById('modal-title');
+    const modalMessage = document.getElementById('modal-message');
+    
+    if (isEdit) {
+        modalTitle.textContent = 'Konfirmasi Perubahan Pesanan';
+        modalMessage.textContent = 'Apakah data perubahan pesanan sudah benar?';
+    } else {
+        modalTitle.textContent = 'Konfirmasi Pesanan';
+        modalMessage.textContent = 'Apakah data pesanan sudah benar?';
+    }
+    
+    document.getElementById('confirm-modal').classList.remove('hidden');
+}
+
+function closeModal() {
+    document.getElementById('confirm-modal').classList.add('hidden');
+}
+
+function performSubmit() {
+    // Disable buttons to prevent double-click
+    const btn = document.getElementById('submit-btn');
+    const confirmBtn = document.getElementById('btn-confirm');
+    btn.disabled = true;
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Menyimpan...';
+    document.getElementById('order-form').submit();
+}
+
+document.getElementById('confirm-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+</script>
+{% endblock %}
