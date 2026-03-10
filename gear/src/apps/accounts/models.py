@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator, MinLengthValidator
 from django.forms import ValidationError
 from django.utils.translation import gettext as _
-from django.conf import settings
 import re
 
 from .managers import AccountManager
@@ -40,6 +39,30 @@ class Account(AbstractUser):
 
     # avatar file uploaded to /MEDIA_ROOT/avatars/
     avatar = models.ImageField(null=True, upload_to=get_upload_target)
+
+    # override method clean to do custom validation
+    def clean(self):
+
+        super().clean()
+        
+        self.first_name = Account.normalize_name(self.first_name)
+
+        if len(self.first_name) < 3:
+            raise ValidationError({'first_name': _('Nama depan harus terdiri dari minimal 3 huruf')})
+        
+        self.last_name = Account.normalize_name(self.last_name)
+
+        self.address = Account.rm_excess_whitespace(self.address)
+
+    def normalize_name(name: str) -> str:
+        name = Account.rm_excess_whitespace(name)
+        name = ' '.join([n.capitalize() for n in name.split(' ')])
+        return name
+    
+    def rm_excess_whitespace(text: str) -> str:
+        text = text.strip()
+        text = re.sub(r'\s+', ' ', text)
+        return text
 
     # override method clean to do custom validation
     def clean(self):

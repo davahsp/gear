@@ -1,0 +1,107 @@
+{% extends 'layout_app.html' %}
+
+{% block content %}
+  <div class="p-8 bg-gray-50 min-h-screen font-sans">
+    <!-- Page header and save action -->
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <a
+          href="{% url 'inventory:supplier' %}"
+          class="text-red-500 font-semibold flex items-center text-sm mb-2 hover:underline"
+        >
+          <span class="mr-1">&lt;</span> Kembali
+        </a>
+        <h1 class="text-3xl font-bold text-gray-800">Daftar Supplier</h1>
+      </div>
+      <button
+        type="submit"
+        form="supplierForm"
+        class="bg-[#1E8B7E] text-white px-8 py-2 rounded-lg font-semibold hover:bg-teal-700 transition"
+      >
+        Simpan
+      </button>
+    </div>
+
+    <!-- Supplier update form container -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 w-2/3">
+      <h2 class="text-xl font-bold text-gray-800 mb-6">Ubah Supplier</h2>
+
+      <form id="supplierForm" method="POST" action="{% url 'inventory:supplier_update' supplier.id %}">
+        {% csrf_token %}
+
+        <!-- Dynamic form fields from Django form -->
+        {% for field in form %}
+          <div class="mb-5">
+            <label class="block text-gray-700 font-semibold mb-2 text-sm" for="{{ field.id_for_label }}">
+              {{ field.label }}
+            </label>
+            {{ field }}
+
+            {% if field.help_text %}
+              <p class="text-xs text-gray-400 mt-1">{{ field.help_text }}</p>
+            {% endif %}
+
+            {% for error in field.errors %}
+              <p class="text-xs text-red-600 mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+        {% endfor %}
+
+        <!-- Form-level validation errors -->
+        {% if form.non_field_errors %}
+          <div class="mb-3">
+            {% for error in form.non_field_errors %}
+              <p class="text-xs text-red-600 mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <!-- Read-only creation date -->
+        <div class="mb-5">
+          <label class="block text-gray-700 font-semibold mb-2 text-sm">Tanggal Dibuat</label>
+          <div class="relative">
+            <input
+              type="date"
+              value="{{ supplier.created_at|date:'Y-m-d' }}"
+              readonly
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none text-gray-600 cursor-not-allowed"
+            />
+          </div>
+        </div>
+
+        <!-- Active/inactive toggle linked to hidden checkbox value -->
+        <div class="mb-5">
+          <label class="block text-gray-700 font-semibold mb-2 text-sm">Status</label>
+          <div class="flex items-center">
+            <label class="inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                name="is_active"
+                value="1"
+                {% if supplier.is_active %}checked{% endif %}
+                class="sr-only peer"
+                id="statusToggle"
+              >
+              <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1E8B7E]"></div>
+              <span class="ms-3 text-sm font-medium text-gray-700" id="statusText">
+                {% if supplier.is_active %}Aktif{% else %}Nonaktif{% endif %}
+              </span>
+            </label>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Keep status label synchronized with toggle state on the client -->
+  <script>
+    document.getElementById('statusToggle').addEventListener('change', function() {
+      const statusText = document.getElementById('statusText');
+      if (this.checked) {
+        statusText.textContent = 'Aktif';
+      } else {
+        statusText.textContent = 'Nonaktif';
+      }
+    });
+  </script>
+{% endblock %}
