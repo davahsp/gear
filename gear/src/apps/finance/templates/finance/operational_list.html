@@ -1,0 +1,364 @@
+{% extends 'layout_app.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">Operational Tracker</h1>
+        <p class="text-gray-600 mt-1">Kelola transaksi pemasukan dan pengeluaran operasional</p>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="mb-4 p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Summary Cards -->
+    <div class="mb-6">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Ringkasan</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Total Expense Card -->
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600 mb-1">Total Pengeluaran</p>
+                        <p class="text-2xl font-bold text-gray-900">Rp {{ total_expense|floatformat:0 }}</p>
+                    </div>
+                    <div class="bg-red-100 rounded-full p-3">
+                        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Income Card -->
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600 mb-1">Total Pemasukan</p>
+                        <p class="text-2xl font-bold text-gray-900">Rp {{ total_income|floatformat:0 }}</p>
+                    </div>
+                    <div class="bg-green-100 rounded-full p-3">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profit/Loss Card -->
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 {% if profit >= 0 %}border-blue-500{% else %}border-orange-500{% endif %}">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600 mb-1">
+                            {% if profit >= 0 %}Laba{% else %}Rugi{% endif %}
+                        </p>
+                        <p class="text-2xl font-bold {% if profit >= 0 %}text-blue-600{% else %}text-orange-600{% endif %}">
+                            Rp {{ profit|floatformat:0 }}
+                        </p>
+                        <p class="text-sm mt-1 {% if profit >= 0 %}text-blue-500{% else %}text-orange-500{% endif %} font-medium">
+                            {{ profit_percentage|floatformat:1 }}%
+                            {% if profit >= 0 %}
+                                <span class="text-xs">dari pengeluaran</span>
+                            {% else %}
+                                <span class="text-xs">kerugian</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="{% if profit >= 0 %}bg-blue-100{% else %}bg-orange-100{% endif %} rounded-full p-3">
+                        {% if profit >= 0 %}
+                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {% else %}
+                        <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Operational Tracker Card -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <h2 class="text-xl font-semibold text-gray-800 mb-6">Ringkasan Pengeluaran</h2>
+        
+        <!-- Pie Chart -->
+        <div class="flex justify-center mb-8">
+            <div style="max-width: 500px; max-height: 500px;">
+                <canvas id="expenseChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Pengeluaran -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-semibold text-gray-800">Detail Pengeluaran</h3>
+            <a href="{% url 'finance:operational_add' %}" class="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 flex items-center text-sm font-medium">
+                <span class="text-lg mr-1">+</span>
+                Tambah Pengeluaran
+            </a>
+        </div>
+
+        <!-- Filter Form -->
+        <form method="GET" class="mb-6" id="filterForm">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <!-- Search -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Cari</label>
+                    <input type="text" name="search" value="{{ search_query }}" placeholder="Cari kategori/keterangan..." class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+
+        <!-- Type Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Jenis</label>
+                    <select name="jenis" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Semua</option>
+                                <option value="INCOME" {% if jenis_filter == 'INCOME' %}selected{% endif %}>Pemasukan</option>
+                                <option value="EXPENSE" {% if jenis_filter == 'EXPENSE' %}selected{% endif %}>Pengeluaran</option>
+                    </select>
+                </div>
+
+                <!-- Start Date -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
+                            <input type="date" name="start_date" value="{{ start_date }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+
+                        <!-- End Date -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Akhir</label>
+                            <input type="date" name="end_date" value="{{ end_date }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+
+                        <!-- Buttons -->
+                <div class="flex items-end space-x-2">
+                    <button type="submit" class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm font-medium">
+                                Filter
+                            </button>
+                            <a href="{% url 'finance:operational_list' %}" class="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 text-sm font-medium text-center">
+                                Reset
+                    </a>
+                </div>
+            </div>
+        </form>
+
+<!-- Table -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white">
+                <thead class="bg-red-600 text-white">
+                    <tr>
+                                <th class="py-3 px-6 text-left text-sm font-medium">Kategori</th>
+                                <th class="py-3 px-6 text-left text-sm font-medium">Nominal</th>
+                                <th class="py-3 px-6 text-left text-sm font-medium">Tanggal</th>
+                                <th class="py-3 px-6 text-left text-sm font-medium">Keterangan</th>
+                                <th class="py-3 px-6 text-left text-sm font-medium">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            {% for entry in expense_page_obj %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="py-4 px-6 text-blue-700 font-medium">{{ entry.category.name }}</td>
+                                <td class="py-4 px-6 text-gray-800 font-medium">
+                                    Rp {{ entry.nominal|floatformat:0|stringformat:"s" }}
+                                </td>
+                                <td class="py-4 px-6 text-gray-600 text-sm">{{ entry.transaction_date|date:"Y-m-d" }}</td>
+                                <td class="py-4 px-6 text-gray-600 text-sm">{{ entry.description|default:"Lorem ipsum ut augue nunc orci." }}</td>
+                                <td class="py-4 px-6">
+                                    <div class="flex space-x-3">
+                                        <button class="text-green-500 hover:text-green-700">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button>
+                                        <button class="text-red-500 hover:text-red-700">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="py-8 px-6 text-center text-gray-500">Tidak ada data pengeluaran</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if expense_page_obj.has_other_pages %}
+                <div class="mt-6 flex justify-center">
+                    <nav class="flex space-x-2">
+                        {% if expense_page_obj.has_previous %}
+                        <a href="?expense_page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if jenis_filter %}&jenis={{ jenis_filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">Pertama</a>
+                        <a href="?expense_page={{ expense_page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if jenis_filter %}&jenis={{ jenis_filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">Sebelumnya</a>
+                        {% endif %}
+                        
+                        <span class="px-4 py-2 bg-red-600 text-white rounded-lg">{{ expense_page_obj.number }}</span>
+                        
+                        {% if expense_page_obj.has_next %}
+                        <a href="?expense_page={{ expense_page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if jenis_filter %}&jenis={{ jenis_filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">Berikutnya</a>
+                        <a href="?expense_page={{ expense_page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if jenis_filter %}&jenis={{ jenis_filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">Terakhir</a>
+                        {% endif %}
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+
+    <!-- Detail Pemasukan -->
+    <div class="bg-white rounded-lg shadow p-6 mt-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-semibold text-gray-800">Detail Pemasukan</h3>
+                    <a href="{% url 'finance:operational_income_add' %}" class="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 flex items-center text-sm font-medium">
+                        <span class="text-lg mr-1">+</span>
+                        Tambah Pemasukan
+                    </a>
+                </div>
+
+                <!-- Income Table -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white">
+                        <thead class="bg-green-700 text-white">
+                            <tr>
+                                <th class="py-3 px-6 text-left text-sm font-medium">Kategori</th>
+                                <th class="py-3 px-6 text-left text-sm font-medium">Nominal</th>
+                                <th class="py-3 px-6 text-left text-sm font-medium">Tanggal</th>
+                                <th class="py-3 px-6 text-left text-sm font-medium">Keterangan</th>
+                                <th class="py-3 px-6 text-left text-sm font-medium">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            {% for entry in income_page_obj %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="py-4 px-6 text-green-700 font-medium">{{ entry.category.name }}</td>
+                                <td class="py-4 px-6 text-green-600 font-medium">
+                                    Rp {{ entry.nominal|floatformat:0|stringformat:"s" }}
+                                </td>
+                                <td class="py-4 px-6 text-gray-600 text-sm">{{ entry.transaction_date|date:"Y-m-d" }}</td>
+                                <td class="py-4 px-6 text-gray-600 text-sm">{{ entry.description|default:"Lorem ipsum ut augue nunc orci." }}</td>
+                                <td class="py-4 px-6">
+                                    <div class="flex space-x-3">
+                                        <button class="text-green-500 hover:text-green-700">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button>
+                                        <button class="text-red-500 hover:text-red-700">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="py-8 px-6 text-center text-gray-500">Tidak ada data pemasukan</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Income Pagination -->
+                {% if income_page_obj.has_other_pages %}
+                <div class="mt-6 flex justify-center">
+                    <nav class="flex space-x-2">
+                        {% if income_page_obj.has_previous %}
+                        <a href="?income_page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if jenis_filter %}&jenis={{ jenis_filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">Pertama</a>
+                        <a href="?income_page={{ income_page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if jenis_filter %}&jenis={{ jenis_filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">Sebelumnya</a>
+                        {% endif %}
+                        
+                        <span class="px-4 py-2 bg-green-600 text-white rounded-lg">{{ income_page_obj.number }}</span>
+                        
+                        {% if income_page_obj.has_next %}
+                        <a href="?income_page={{ income_page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if jenis_filter %}&jenis={{ jenis_filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">Berikutnya</a>
+                        <a href="?income_page={{ income_page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if jenis_filter %}&jenis={{ jenis_filter }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">Terakhir</a>
+                        {% endif %}
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Pie Chart with exact colors from design
+    const chartData = {{ chart_data|safe }};
+    const ctx = document.getElementById('expenseChart').getContext('2d');
+    
+    // Colors matching the design: Purple, Pink, Cyan, Orange, Green, Blue
+    const colors = [
+        '#8B5CF6', // Ongkos Kirim - Purple
+        '#10B981', // Tagihan Listrik - Green  
+        '#A78BFA', // Tagihan Air - Light Purple
+        '#EC4899', // Pemeliharaan - Pink
+        '#14B8A6', // Perbaikan - Cyan
+        '#F59E0B', // Lainnya - Orange
+    ];
+    
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: chartData.map(item => item.category),
+            datasets: [{
+                data: chartData.map(item => item.percentage),
+                backgroundColor: colors.slice(0, chartData.length),
+                borderWidth: 0,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15,
+                        font: {
+                            size: 12
+                        },
+                        generateLabels: function(chart) {
+                            const data = chart.data;
+                            if (data.labels.length && data.datasets.length) {
+                                return data.labels.map((label, i) => {
+                                    const value = chartData[i].percentage;
+                                    return {
+                                        text: `${label}  ${value}%`,
+                                        fillStyle: data.datasets[0].backgroundColor[i],
+                                        hidden: false,
+                                        index: i
+                                    };
+                                });
+                            }
+                            return [];
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const item = chartData[context.dataIndex];
+                            return `${item.category}: ${item.percentage}% (Rp ${item.total.toLocaleString('id-ID')})`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

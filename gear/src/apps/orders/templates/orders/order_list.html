@@ -1,0 +1,186 @@
+{% extends 'layout_app.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">Manajemen Pesanan</h1>
+        <h2 class="text-xl font-semibold text-gray-700">Daftar Pesanan</h2>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="mb-4 p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Search and Filters -->
+    <form method="GET" class="mb-6">
+        <div class="flex flex-wrap items-end gap-4">
+            <!-- Search -->
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-xs font-medium text-gray-500 mb-1">Cari</label>
+                <div class="relative">
+                    <input type="text" name="search" value="{{ search_query }}" placeholder="No. Order atau Nama Toko..."
+                        class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                    <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Status filter -->
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Status</label>
+                <select name="status" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+                    <option value="">Semua Status</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Date range -->
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Dari Tanggal</label>
+                <input type="date" name="date_from" value="{{ date_from }}" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Sampai Tanggal</label>
+                <input type="date" name="date_to" value="{{ date_to }}" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+            </div>
+
+            {% if is_admin %}
+            <!-- Sales filter -->
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Sales</label>
+                <select name="sales" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500">
+                    <option value="">Semua Sales</option>
+                    {% for user in sales_users %}
+                    <option value="{{ user.pk }}" {% if sales_filter == user.pk|stringformat:"s" %}selected{% endif %}>{{ user.get_full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            <button type="submit" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                Filter
+            </button>
+            <a href="{% url 'orders:order-list' %}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-600">
+                Reset
+            </a>
+            {% if can_create %}
+            <a href="{% url 'orders:order-create' %}" class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center" title="Hanya Owner dan Sales yang dapat membuat pesanan">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Buat Pesanan
+            </a>
+            {% endif %}
+        </div>
+    </form>
+
+    <!-- Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        {% if orders %}
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-indigo-900 text-white">
+                <tr>
+                    <th class="px-6 py-4 text-left text-sm font-semibold">No. Order</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold">Tanggal</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold">Pelanggan</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold">Sales</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold">Status</th>
+                    <th class="px-6 py-4 text-right text-sm font-semibold">Jumlah Item</th>
+                    <th class="px-6 py-4 text-right text-sm font-semibold">Total</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold">Pembayaran</th>
+                    <th class="px-6 py-4 text-center text-sm font-semibold">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for order in orders %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ order.order_number }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">{{ order.order_date|date:"d M Y" }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">{{ order.customer.name|default:"-" }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">{{ order.who_inputs.get_full_name }}</td>
+                    <td class="px-6 py-4 text-sm">
+                        {% if order.order_status == 'REQUESTED' %}
+                            <span class="px-3 py-1 text-xs font-semibold rounded-full bg-gray-200 text-gray-800">Mengajukan</span>
+                        {% elif order.order_status == 'IN_PROGRESS' %}
+                            <span class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Diproses</span>
+                        {% elif order.order_status == 'IN_SHIPPING' %}
+                            <span class="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Diantar</span>
+                        {% elif order.order_status == 'DELIVERED' %}
+                            <span class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Diterima</span>
+                        {% elif order.order_status == 'COMPLETED' %}
+                            <span class="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800">Selesai</span>
+                        {% elif order.order_status == 'CANCELLED' %}
+                            <span class="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Dibatalkan</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600 text-right">{{ order.item_count }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900 text-right font-medium">Rp {{ order.total_price|floatformat:0 }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">{{ order.get_payment_method_display }}</td>
+                    <td class="px-6 py-4 text-center">
+                        {% if can_create %}
+                        <a href="{% url 'orders:order-detail' pk=order.pk %}" class="inline-flex items-center px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded hover:bg-indigo-700 transition-colors" title="Hanya Owner dan Sales yang dapat mengelola pesanan">
+                            Detail
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-16">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">Belum ada data pesanan</h3>
+            <p class="mt-1 text-sm text-gray-500">Mulai buat pesanan baru untuk melihat data di sini.</p>
+            <div class="mt-6">
+                {% if can_create %}
+                <a href="{% url 'orders:order-create' %}" class="inline-flex items-center px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700" title="Hanya Owner dan Sales yang dapat membuat pesanan">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Buat Pesanan
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if orders.has_other_pages %}
+    <div class="flex justify-center mt-6">
+        <nav class="inline-flex rounded-md shadow-sm -space-x-px">
+            {% if orders.has_previous %}
+            <a href="?page={{ orders.previous_page_number }}&search={{ search_query }}&status={{ status_filter }}&date_from={{ date_from }}&date_to={{ date_to }}&sales={{ sales_filter }}"
+               class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm text-gray-500 hover:bg-gray-50">&laquo; Sebelumnya</a>
+            {% endif %}
+
+            {% for num in orders.paginator.page_range %}
+                {% if orders.number == num %}
+                <span class="px-4 py-2 border border-indigo-500 bg-indigo-50 text-sm font-medium text-indigo-600">{{ num }}</span>
+                {% elif num > orders.number|add:'-3' and num < orders.number|add:'3' %}
+                <a href="?page={{ num }}&search={{ search_query }}&status={{ status_filter }}&date_from={{ date_from }}&date_to={{ date_to }}&sales={{ sales_filter }}"
+                   class="px-4 py-2 border border-gray-300 bg-white text-sm text-gray-700 hover:bg-gray-50">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if orders.has_next %}
+            <a href="?page={{ orders.next_page_number }}&search={{ search_query }}&status={{ status_filter }}&date_from={{ date_from }}&date_to={{ date_to }}&sales={{ sales_filter }}"
+               class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm text-gray-500 hover:bg-gray-50">Selanjutnya &raquo;</a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

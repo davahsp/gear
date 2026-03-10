@@ -2,48 +2,51 @@
 
 {% block title %}Manajemen Bahan Baku - GEAR{% endblock %}
 
+{% block header_extra %}
+<div class="flex items-center justify-between">
+    <span class="text-sm text-gray-500">Inventori / Bahan Baku</span>
+</div>
+{% endblock %}
+
 {% block content %}
 
-<!-- Flash messages -->
 {% if messages %}
-{% for message in messages %}
-{% if message.tags == 'success' %}
-<!-- Success popup -->
-<div id="success-popup"
-     class="fixed top-6 right-6 z-50 bg-white rounded-2xl border border-gray-200 shadow-xl p-6 text-center w-72 transition-all duration-500">
-    <div class="flex justify-center mb-3">
-        <div class="w-12 h-12 rounded-full bg-[#2B9B6F] flex items-center justify-center">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-            </svg>
+<div class="mb-6 space-y-2">
+    {% for message in messages %}
+        {% if message.tags == 'success' %}
+        <div id="success-popup"
+             class="fixed top-6 right-6 z-50 bg-white rounded-2xl border border-gray-200 shadow-xl p-6 text-center w-72 transition-all duration-500">
+            <div class="flex justify-center mb-3">
+                <div class="w-12 h-12 rounded-full bg-[#2B9B6F] flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-lg font-bold text-gray-900 mb-1">Data berhasil disimpan!</p>
+            <p class="text-sm text-gray-600">{{ message }}</p>
         </div>
-    </div>
-    <p class="text-lg font-bold text-gray-900 mb-1">Data berhasil disimpan!</p>
-    <p class="text-sm text-gray-600">{{ message }}</p>
+        <script>
+            setTimeout(function () {
+                const popup = document.getElementById('success-popup');
+                if (popup) {
+                    popup.style.opacity = '0';
+                    popup.style.transform = 'translateY(-10px)';
+                    setTimeout(() => popup.remove(), 500);
+                }
+            }, 3000);
+        </script>
+        {% else %}
+        <div class="flex items-center gap-3 p-4 rounded-xl border text-sm font-medium
+            {% if message.tags == 'error' %}bg-red-50 border-red-200 text-red-800
+            {% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %}">
+            {{ message }}
+        </div>
+        {% endif %}
+    {% endfor %}
 </div>
-<script>
-    setTimeout(function () {
-        const popup = document.getElementById('success-popup');
-        if (popup) {
-            popup.style.opacity = '0';
-            popup.style.transform = 'translateY(-10px)';
-            setTimeout(() => popup.remove(), 500);
-        }
-    }, 3000);
-</script>
-{% else %}
-<div class="mb-6 flex items-center gap-3 p-4 rounded-xl border text-sm font-medium
-    {% if message.tags == 'error' %}bg-red-50 border-red-200 text-red-800
-    {% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %}">
-    {{ message }}
-</div>
-{% endif %}
-{% endfor %}
 {% endif %}
 
-<!-- ============================================================ -->
-<!-- SECTION 1: Daftar Stok Bahan Baku                           -->
-<!-- ============================================================ -->
 <h1 class="text-3xl font-black text-gray-900 mb-6">Manajemen Bahan Baku</h1>
 
 <div class="mb-10">
@@ -106,18 +109,13 @@
 </div>
 
 
-<!-- ============================================================ -->
-<!-- SECTION 2: Daftar Transaksi Barang Masuk                    -->
-<!-- ============================================================ -->
 <div>
     <div class="flex items-center justify-between mb-4">
         <h2 class="text-xl font-bold text-gray-800">Daftar Transaksi Barang Masuk</h2>
     </div>
 
-    <!-- Filter bar -->
     <form method="get" id="filter-form" class="flex flex-wrap items-center gap-3 mb-5">
 
-    <!-- Search -->
     <div class="relative flex-1 min-w-[200px]">
         <span class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,14 +129,12 @@
                       focus:outline-none focus:ring-2 focus:ring-[#2B308B]">
     </div>
 
-    <!-- Date filter -->
     <div class="relative">
         <input type="date" name="date" value="{{ q_date }}"
                class="border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-700
                       focus:outline-none focus:ring-2 focus:ring-[#2B308B]">
     </div>
 
-    <!-- Supplier filter -->
     <div class="relative">
         <select name="supplier"
                 class="border border-gray-300 rounded-lg pl-3 pr-8 py-2.5 text-sm text-gray-700
@@ -155,7 +151,6 @@
         </span>
     </div>
 
-    <!-- Submit & clear side by side -->
     <button type="submit"
             class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
         Filter
@@ -167,10 +162,8 @@
     </a>
     {% endif %}
 
-    <!-- Spacer -->
     <div class="flex-1"></div>
 
-    <!-- Tambah Bahan -->
     {% if is_warehouse %}
     <a href="{% url 'inventory:inbound-add' %}"
        class="flex items-center gap-2 bg-[#2B308B] hover:bg-[#232874] text-white
@@ -184,7 +177,6 @@
 
 </form>
 
-<!-- Table -->
 {% if page_obj.object_list %}
 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
     <table class="w-full text-sm">
@@ -211,7 +203,6 @@
                 <td class="px-5 py-4 text-gray-700">{{ item.purchase.receive_date|date:"Y-m-d" }}</td>
                 <td class="px-5 py-4">
                     <div class="flex items-center justify-center gap-2">
-                        <!-- Detail -->
                         <a href="{% url 'inventory:inbound-detail' item.pk %}" title="Detail"
                            class="text-gray-400 hover:text-[#2B308B] transition-colors p-1 rounded">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -221,7 +212,6 @@
                                       d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                             </svg>
                         </a>
-                        <!-- Edit -->
                         <a href="#" title="Edit"
                            class="text-[#2B9B6F] hover:text-[#238a61] transition-colors p-1 rounded">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -230,7 +220,6 @@
                                          m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                             </svg>
                         </a>
-                        <!-- Delete -->
                         <a href="#" title="Hapus"
                            class="text-red-500 hover:text-red-600 transition-colors p-1 rounded">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -257,7 +246,6 @@
         </tbody>
     </table>
 
-    <!-- Pagination -->
     {% if page_obj.paginator.num_pages > 1 %}
     <div class="border-t border-gray-100 px-5 py-4 flex items-center justify-center gap-1 bg-white">
 
@@ -285,7 +273,7 @@
             <a href="?page={{ num }}&search={{ q_search }}&date={{ q_date }}&supplier={{ q_supplier }}"
                class="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">{{ num }}</a>
             {% elif num == page_obj.number|add:"-3" or num == page_obj.number|add:"3" %}
-            <span class="px-2 py-1.5 text-sm text-gray-400">â€¦</span>
+            <span class="px-2 py-1.5 text-sm text-gray-400">…</span>
             {% endif %}
         {% endfor %}
 
@@ -309,10 +297,7 @@
     </div>
     {% endif %}
 
-</div><!-- end table card -->
-
-{% else %}
-<!-- Empty state -->
+</div>{% else %}
 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-16 text-center">
     <svg class="w-12 h-12 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -338,6 +323,4 @@
 </div>
 {% endif %}
 
-</div><!-- end section 2 -->
-
-{% endblock %}
+</div>{% endblock %}

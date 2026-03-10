@@ -1,9 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from datetime import date
-from django.contrib.auth import get_user_model
-
-AUTH_USER_MODEL = get_user_model()
+from django.conf import settings
 
 class EntryType(models.TextChoices):
 
@@ -36,7 +34,7 @@ class FinanceEntry(models.Model):
     description = models.TextField(null=True)
     transaction_date = models.DateField(default=date.today)
 
-    who_inputs = models.ForeignKey(to=AUTH_USER_MODEL,
+    who_inputs = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                                    on_delete=models.PROTECT,
                                    related_name='entry_inputs')
 

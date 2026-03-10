@@ -1,0 +1,114 @@
+{% extends 'layout_app.html' %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <a href="{% url 'orders:pelanggan-operasional' %}" class="text-red-500 hover:text-red-700 flex items-center mb-4">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Kembali
+        </a>
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ title }}</h1>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="mb-4 p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Form Card -->
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Tambah Pelanggan</h2>
+        
+        <form method="POST" action="{% url 'orders:customer-add' %}" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Form Errors -->
+            {% if form.non_field_errors %}
+            <div class="p-4 bg-red-100 text-red-800 rounded-lg">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <!-- Nama Pelanggan -->
+            <div>
+                <label for="{{ form.name.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Nama Pelanggan <span class="text-red-500">*</span>
+                </label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-xs text-gray-500">Maksimal 50 karakter</p>
+            </div>
+
+            <!-- Kontak (Phone Number) -->
+            <div>
+                <label for="{{ form.phone_number.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Kontak <span class="text-red-500">*</span>
+                </label>
+                {{ form.phone_number }}
+                {% if form.phone_number.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.phone_number.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-xs text-gray-500">Masukkan nomor kontak yang masih aktif</p>
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label for="{{ form.email.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Email
+                </label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Alamat -->
+            <div>
+                <label for="{{ form.address.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Alamat
+                </label>
+                {{ form.address }}
+                {% if form.address.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.address.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-xs text-gray-500">Maksimal 200 karakter</p>
+            </div>
+
+            <!-- Sales PIC -->
+            <div>
+                <label for="{{ form.sales_pic.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Sales PIC <span class="text-red-500">*</span>
+                </label>
+                {{ form.sales_pic }}
+                {% if form.sales_pic.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.sales_pic.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="flex items-center justify-end gap-4 pt-4 border-t">
+                <a href="{% url 'orders:pelanggan-operasional' %}" 
+                   class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    Batal
+                </a>
+                <button type="submit" 
+                        class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
