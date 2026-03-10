@@ -46,6 +46,13 @@ if not hosts:
 
 ALLOWED_HOSTS = hosts.split(',')
 
+# 1. Tell Django to trust the domains for CSRF (Form Submissions)
+# This loops through your ALLOWED_HOSTS and prepends 'https://' to each one
+CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS]
+
+# 2. Tell Django to trust the secure header sent by Railway's reverse proxy
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
