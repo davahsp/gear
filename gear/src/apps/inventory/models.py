@@ -3,6 +3,7 @@ from django.core.validators import MinValueValidator
 from django.contrib.auth import get_user_model
 
 from datetime import date
+import re
 
 AUTH_USER_MODEL = get_user_model()
 
@@ -83,11 +84,71 @@ class DailyProductionRawItem(models.Model):
 
 class Supplier(models.Model):
 
-    name = models.CharField(max_length=63, unique=True)
+    id = models.CharField(
+        max_length=10,
+        primary_key=True,
+        editable=False
+    )
+    name = models.CharField(
+        max_length=63,
+        unique=True,
+        error_messages={
+            'unique': 'Nama supplier sudah terdaftar di sistem.'
+        }
+    )
     email = models.EmailField(max_length=31, null=True)
-    phone_number = models.CharField(max_length=15)
+    phone_number = models.CharField(max_length=15,  null=True)
     address = models.CharField(max_length=127, null=True)
     last_transaction = models.DateField(null=True)
+
+    # Menambahkan field is_active untuk menandai apakah supplier masih aktif atau tidak
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        """Auto-generate ID dengan format SUP-XXXX saat create (tanpa menyimpan)."""
+        if not self.id:
+            # Hitung supplier berikutnya
+            last_supplier = Supplier.objects.all().order_by('-id').first()
+            if last_supplier:
+                # Extract angka dari ID terakhir (mis: "SUP-0042" -> 42)
+                try:
+                    last_num = int(last_supplier.id.split('-')[1])
+                    next_num = last_num + 1
+                except (IndexError, ValueError):
+                    next_num = 1
+            else:
+                next_num = 1
+            
+            self.id = f"SUP-{next_num:04d}"
+        
+        super().save(*args, **kwargs)
+
+    @property
+    def whatsapp_number(self):
+        """Normalisasi nomor supplier ke format WhatsApp ID: 62xxxxxxxxxx."""
+        if not self.phone_number:
+            return ''
+
+        digits = re.sub(r'\D', '', self.phone_number)
+        if not digits:
+            return ''
+
+        if digits.startswith('0'):
+            return f"62{digits[1:]}"
+
+        if digits.startswith('62'):
+            return digits
+
+        return f"62{digits}"
+
+    @property
+    def whatsapp_url(self):
+        """URL WhatsApp API siap pakai untuk nomor supplier."""
+        normalized_number = self.whatsapp_number
+        if not normalized_number:
+            return ''
+        return f"https://wa.me/{normalized_number}"
 
 class Purchase(models.Model):
 
