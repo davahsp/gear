@@ -16,7 +16,7 @@ from django.views.generic import TemplateView
 
 # Local App Imports (Forms & Models)
 from .forms import (
-    SupplierForm, 
+    SupplierForm,
     RawMaterialInboundForm, 
     DailyProductionItemForm
 )
@@ -31,6 +31,7 @@ from .models import (
     DailyProductionRawItem, 
     ProductType,
 )
+
 
 class InboundsListView(PermissionRequiredMixin, LoginRequiredMixin, View):
     permission_required = 'inventory.view_purchase'
@@ -457,7 +458,11 @@ class ProductionListView(PermissionRequiredMixin, LoginRequiredMixin, View):
             'q_type':       q_type,
             'is_warehouse': request.user.groups.filter(name='Warehouse').exists(),
         })
-    
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Supplier Views
+# ─────────────────────────────────────────────────────────────────────────────
+
 class SupplierListView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
     """Menampilkan daftar supplier dengan fitur filter, sorting, dan pagination."""
 
@@ -475,30 +480,43 @@ class SupplierListView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView
         """
         context = super().get_context_data(**kwargs)
         request = self.request
+        
+        # Start with base queryset
         suppliers = Supplier.objects.all()
+        
+        # Filters
         q = request.GET.get('q', '').strip()
         status = request.GET.get('status', '')
-        sort = request.GET.get('sort', 'created_at')
-        order = request.GET.get('order', 'desc')
+        
         if q:
             suppliers = suppliers.filter(name__icontains=q)
         if status == 'aktif':
             suppliers = suppliers.filter(is_active=True)
         elif status == 'nonaktif':
             suppliers = suppliers.filter(is_active=False)
+            
+        # Sorting
+        sort = request.GET.get('sort', 'created_at')
+        order = request.GET.get('order', 'desc')
+        
         sort_fields = {
             'name': 'name',
             'created_at': 'created_at',
             'status': 'is_active',
         }
         sort_field = sort_fields.get(sort, 'created_at')
+        
         if order == 'asc':
             suppliers = suppliers.order_by(sort_field)
         else:
             suppliers = suppliers.order_by('-' + sort_field)
+            
+        # Pagination
         paginator = Paginator(suppliers, 10)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
+        
+        # Populate context
         context['suppliers'] = page_obj
         context['page_obj'] = page_obj
         context['sort'] = sort
@@ -525,11 +543,13 @@ class SupplierCreateView(LoginRequiredMixin, PermissionRequiredMixin, TemplateVi
             if Supplier.objects.filter(name__iexact=name).exists():
                 form.add_error('name', 'Nama supplier sudah terdaftar di sistem.')
                 return self.render_to_response(self.get_context_data(form=form))
+            
             supplier = form.save(commit=False)
             supplier.is_active = True
             supplier.save()
             messages.success(request, 'Supplier berhasil ditambahkan!')
             return redirect('inventory:supplier')
+            
         return self.render_to_response(self.get_context_data(form=form))
 
 class SupplierUpdateView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
@@ -543,6 +563,7 @@ class SupplierUpdateView(LoginRequiredMixin, PermissionRequiredMixin, TemplateVi
         context = super().get_context_data(**kwargs)
         pk = kwargs.get('pk')
         supplier = get_object_or_404(Supplier, pk=pk)
+        
         context['supplier'] = supplier
         context['form'] = kwargs.get('form') or SupplierForm(instance=supplier)
         return context
@@ -552,14 +573,20 @@ class SupplierUpdateView(LoginRequiredMixin, PermissionRequiredMixin, TemplateVi
         pk = kwargs.get('pk')
         supplier = get_object_or_404(Supplier, pk=pk)
         form = SupplierForm(request.POST, instance=supplier)
+        
         if form.is_valid():
             name = form.cleaned_data['name']
+            # Check for name duplication, excluding the current supplier being edited
             if Supplier.objects.filter(name__iexact=name).exclude(pk=pk).exists():
                 form.add_error('name', 'Nama supplier sudah terdaftar di sistem.')
                 return self.render_to_response(self.get_context_data(form=form, pk=pk))
+            
             supplier = form.save(commit=False)
+            # Check if the is_active checkbox was ticked
             supplier.is_active = request.POST.get('is_active') == '1'
             supplier.save()
+            
             messages.success(request, 'Supplier berhasil diperbarui!')
             return redirect('inventory:supplier')
+            
         return self.render_to_response(self.get_context_data(form=form, pk=pk))

@@ -3,11 +3,13 @@
 {% block title %}Detail Transaksi Barang Masuk - GEAR{% endblock %}
 
 {% block header_extra %}
+<div class="flex items-center justify-between">
+    <span class="text-sm text-gray-500">Inventori / Bahan Baku / Detail Transaksi</span>
+</div>
 {% endblock %}
 
 {% block content %}
 
-<!-- Flash messages -->
 {% if messages %}
 <div class="mb-6 space-y-2">
     {% for message in messages %}
@@ -26,9 +28,8 @@
 </div>
 {% endif %}
 
-<!-- Back link -->
 <a href="{% url 'inventory:inbounds' %}"
-   class="inline-flex items-center gap-1 text-sm text-red-500 hover:text-red-600 font-semibold hover:underline mb-5">
+   class="inline-flex items-center gap-1 text-sm text-[#2B308B] font-semibold hover:underline mb-5">
     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
     </svg>
@@ -37,7 +38,6 @@
 
 <h1 class="text-3xl font-black text-gray-900 mb-6">Daftar Transaksi Barang Masuk</h1>
 
-<!-- Inactive banner -->
 {% if not item.purchase.is_active %}
 <div class="flex items-center gap-3 p-4 mb-6 rounded-xl border bg-red-50 border-red-200 text-red-700 text-sm font-medium">
     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -48,15 +48,11 @@
 </div>
 {% endif %}
 
-<!-- ──────────────────────────────────────── -->
-<!-- Main detail card                         -->
-<!-- ──────────────────────────────────────── -->
 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
     <h2 class="text-lg font-bold text-gray-800 mb-6">Detail Bahan Baku</h2>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        <!-- ── Info Transaksi ─────────────────────────── -->
         <div class="bg-gray-50 rounded-xl p-5 space-y-4">
             <h3 class="text-base font-bold text-gray-700 border-b border-gray-200 pb-2">Info Transaksi</h3>
 
@@ -99,7 +95,6 @@
             </div>
         </div>
 
-        <!-- ── Info Supplier ──────────────────────────── -->
         <div class="bg-gray-50 rounded-xl p-5 space-y-4">
             <h3 class="text-base font-bold text-gray-700 border-b border-gray-200 pb-2">Info Supplier</h3>
 
@@ -125,7 +120,6 @@
             </div>
         </div>
 
-        <!-- ── Info Bahan Baku ────────────────────────── -->
         <div class="bg-gray-50 rounded-xl p-5 space-y-4">
             <h3 class="text-base font-bold text-gray-700 border-b border-gray-200 pb-2">Info Bahan Baku</h3>
 
@@ -151,7 +145,6 @@
             </div>
         </div>
 
-        <!-- ── Info User ──────────────────────────────── -->
         <div class="bg-gray-50 rounded-xl p-5 space-y-4">
             <h3 class="text-base font-bold text-gray-700 border-b border-gray-200 pb-2">Info User</h3>
 
@@ -172,16 +165,8 @@
             </div>
         </div>
 
-    </div><!-- /grid -->
-</div><!-- /card -->
-
-<!-- ──────────────────────────────────────── -->
-<!-- Action buttons                          -->
-<!-- ──────────────────────────────────────── -->
-<div class="flex items-center gap-3">
-
+    </div></div><div class="flex items-center gap-3">
     {% if item.purchase.is_active %}
-    <!-- Hapus button: triggers confirm modal -->
     <button type="button" onclick="document.getElementById('deleteModal').classList.remove('hidden')"
             class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600
                    text-sm font-semibold text-white hover:bg-red-700 transition-colors">
@@ -194,9 +179,6 @@
     {% endif %}
 </div>
 
-<!-- ──────────────────────────────────────── -->
-<!-- Delete confirmation modal               -->
-<!-- ──────────────────────────────────────── -->
 {% if item.purchase.is_active %}
 <div id="deleteModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
     <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4">
