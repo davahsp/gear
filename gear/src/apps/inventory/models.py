@@ -1,8 +1,10 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 from datetime import date
+
+AUTH_USER_MODEL = get_user_model()
 
 class ProductType(models.TextChoices):
 
@@ -35,7 +37,7 @@ class DailyProduction(models.Model):
     production_date = models.DateField(default=date.today)
     notes = models.TextField(null=True)
 
-    who_inputs = models.ForeignKey(to=User,
+    who_inputs = models.ForeignKey(to=AUTH_USER_MODEL,
                                    on_delete=models.PROTECT,
                                    related_name='daily_production_inputs')
 
@@ -99,7 +101,7 @@ class Purchase(models.Model):
     purchase_date = models.DateField(default=date.today)
     receive_date = models.DateField(default=date.today)
 
-    who_inputs = models.ForeignKey(to=User,
+    who_inputs = models.ForeignKey(to=AUTH_USER_MODEL,
                                    on_delete=models.PROTECT,
                                    related_name='purchase_inputs')
 
