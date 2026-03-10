@@ -60,6 +60,7 @@
                 <button hx-post="{% url 'accounts:htmx-toggle-status' a.id %}" 
                         hx-target="#row-{{ a.id }}"
                         hx-swap="outerHTML" 
+                        hx-confirm="Apakah Anda yakin untuk {% if a.is_active %}nonaktifkan{% else %}aktifkan{% endif %} akun ini?"
                         class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 {% if a.is_active %}bg-emerald-500{% else %}bg-slate-300{% endif %}" 
                         role="switch" 
                         aria-checked="{{ a.is_active|yesno:'true,false' }}"

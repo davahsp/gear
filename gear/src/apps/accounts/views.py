@@ -100,7 +100,7 @@ class AccountPasswordChangeView(LoginRequiredMixin, PermissionRequiredMixin, Sin
     form_class = AccountPasswordChangeForm
     model = Account
 
-    template_name = 'accounts/account-password-change.html'
+    template_name = 'accounts/password-change.html'
     success_url = reverse_lazy('accounts:index')
 
     def get(self, request, *args, **kwargs):
