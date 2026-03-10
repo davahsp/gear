@@ -68,7 +68,7 @@ class Migration(migrations.Migration):
         ('auth', '0012_alter_user_first_name_max_length'),
         
         # Latest migration of each application
-        ('accounts', '0003_alter_account_options'),
+        ('accounts', '0001_initial'),
         ('finance', '0001_initial'),
         ('inventory', '0001_initial'),
         ('orders', '0001_initial'),
