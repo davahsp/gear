@@ -119,7 +119,8 @@
                             <form method="POST" action="{% url 'orders:customer-toggle-status' customer.pk %}" 
                                   class="toggle-form" 
                                   data-customer-name="{{ customer.name }}" 
-                                  data-customer-status="{{ customer.status }}">
+                                  data-customer-status="{{ customer.status }}"
+                                  data-has-unpaid="{{ customer.has_unpaid_invoices|yesno:'true,false' }}">
                                 {% csrf_token %}
                                 <label class="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" class="sr-only peer" 
@@ -198,6 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const checkbox = form.querySelector('input[type="checkbox"]');
         const customerName = form.dataset.customerName;
         const currentStatus = form.dataset.customerStatus;
+        const hasUnpaid = form.dataset.hasUnpaid === 'true';
         
         // Prevent default submit from onchange
         checkbox.addEventListener('change', function(e) {
@@ -205,6 +207,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Determine new status
             const willActivate = this.checked;
+            
+            // Show warning for unpaid invoices when deactivating
+            if (!willActivate && hasUnpaid) {
+                alert('Customer ini masih memiliki tunggakan!');
+            }
             
             let message = willActivate
                 ? `Anda yakin ingin mengaktifkan customer "${customerName}"?`
