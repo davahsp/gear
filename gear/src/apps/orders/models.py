@@ -175,8 +175,11 @@ class Customer(models.Model):
             self.customer_id = f'CUS-{year_month}-{new_num:04d}'
         
         super().save(*args, **kwargs)
-
-
     
-
-    
+    @property
+    def has_unpaid_invoices(self):
+        """Check if customer has any unpaid or in-checking invoices"""
+        return Order.objects.filter(
+            customer=self,
+            payment_status__in=[PaymentStatus.UNPAID, PaymentStatus.IN_CHECKING]
+        ).exists()

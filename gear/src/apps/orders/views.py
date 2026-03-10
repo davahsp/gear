@@ -600,4 +600,3 @@ def customer_toggle_status(request, pk):
     messages.success(request, message)
     
     return redirect('orders:pelanggan-operasional')
-
