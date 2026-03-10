@@ -4,7 +4,10 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.views.generic import View, TemplateView, UpdateView, DeleteView, DetailView, CreateView, FormView
 from django.views.generic.detail import SingleObjectMixin
+from django.views.generic.list import ListView
 from django.urls import reverse_lazy
+from django.db.models.functions import Concat
+from django.db.models import Value
 
 from .forms import AccountCreateForm, AccountUpdateForm, MyAccountPasswordChangeForm, PhoneAuthenticationForm, AccountPasswordChangeForm
 from .models import Account
@@ -39,19 +42,16 @@ class MyAccountPasswordChangeView(PasswordChangeView):
     template_name = 'accounts/my-account-password-change.html'
     success_url = reverse_lazy('accounts:my-account')
 
-class IndexView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
+class AccountIndexView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
 
     permission_required = 'accounts.view_account'
-    permission_denied_message = 'You do not have authorization to view all accounts'
 
     template_name = 'accounts/index.html'
 
     def get_context_data(self, **kwargs):
+
         context = super().get_context_data(**kwargs)
-
-        context['accounts'] = Account.objects.all() 
         context['groups'] = Group.objects.all()
-
         return context
     
 class AccountCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
@@ -128,7 +128,45 @@ class AccountDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
     template_name = 'accounts/delete.html'
     model = Account
 
-class AccountToggleStatusView(LoginRequiredMixin, PermissionRequiredMixin, SingleObjectMixin, View):
+class HtmxAccountTableView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
+    permission_required = 'accounts.view_account'
+    template_name = 'accounts/htmx/account-table.html'
+    model = Account
+    context_object_name = 'accounts'
+
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+        context['groups'] = Group.objects.all()
+        return context
+    
+    def get_queryset(self):
+        queryset = super().get_queryset().annotate(
+            full_name=Concat('first_name', Value(' '), 'last_name')
+        )
+
+        role = self.request.GET.get('role')
+
+        if role:
+            if role.lower() == 'owner':
+                queryset = queryset.filter(is_superuser=True)
+            else:
+                queryset = queryset.filter(groups__name=role)
+
+        status = self.request.GET.get('status')
+
+        if status:
+            is_active = (status.lower() == 'active')
+            queryset = queryset.filter(is_active=is_active)
+
+        name = self.request.GET.get('name')
+
+        if name:
+            queryset = queryset.filter(full_name__icontains=name.strip())
+
+        return queryset
+
+class HtmxToggleStatusView(LoginRequiredMixin, PermissionRequiredMixin, SingleObjectMixin, View):
 
     model = Account
     http_method_names = ['post']
@@ -136,7 +174,9 @@ class AccountToggleStatusView(LoginRequiredMixin, PermissionRequiredMixin, Singl
     permission_required = 'accounts.togglestatus_account'
     
     # not part of mixin but rather self-defined
-    template_name = 'accounts/htmx/accounts-tables.html'
+    template_name = 'accounts/htmx/account-table-row.html'
+
+    context_object_name = 'a'
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -145,6 +185,4 @@ class AccountToggleStatusView(LoginRequiredMixin, PermissionRequiredMixin, Singl
 
         self.object.save()
 
-        return render(request, self.template_name, self.get_context_data(
-            accounts = Account.objects.all(),
-            groups = Group.objects.all(),))
+        return render(request, self.template_name, self.get_context_data())
