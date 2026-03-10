@@ -1,0 +1,102 @@
+<tr id="row-{{ a.id }}" class="hover:bg-blue-50/50 transition-colors duration-150 group">            
+    <td class="px-6 py-4 whitespace-nowrap">
+        <div class="flex items-center">
+            <div class="flex-shrink-0 h-10 w-10">
+                {% if a.avatar %}
+                    <img src="{{ a.avatar.url }}" alt="Avatar {{ a.first_name }}" class="h-10 w-10 rounded-full object-cover border border-slate-200 shadow-sm">
+                {% else %}
+                    <div class="h-10 w-10 rounded-full bg-brand/10 text-brand flex items-center justify-center font-bold border border-transparent">
+                        {{ a.first_name|first|upper|default:"?" }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="ml-4">
+                <div class="text-sm font-medium text-slate-900">{{ a.first_name|default:"Tanpa Nama" }}</div>
+                <div class="text-sm text-slate-500">{{ a.phone_number|default:"-" }}</div>
+            </div>
+        </div>
+    </td>
+
+    <td class="px-6 py-4 whitespace-nowrap">
+        <div class="flex flex-wrap gap-1.5">
+            {% if a.is_superuser %}
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200">
+                    Owner
+                </span>
+            {% else %}
+                {% for group in a.groups.all %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200">
+                        {{ group.name }}
+                    </span>
+                {% empty %}
+                    <span class="text-sm text-slate-400 italic">Tanpa Role</span>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </td>
+
+    <td class="px-6 py-4 whitespace-nowrap text-center">
+        {% if a.is_active %}
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
+                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5"></span>
+                Aktif
+            </span>
+        {% else %}
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800 border border-rose-200">
+                <span class="w-1.5 h-1.5 bg-rose-500 rounded-full mr-1.5"></span>
+                Tidak Aktif
+            </span>
+        {% endif %}        
+    </td>
+
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+        {{ a.date_joined|date:"d M Y" }}
+    </td>
+
+    <td class="px-6 py-4 whitespace-nowrap text-center">
+        <div class="flex items-center space-x-3 transition-opacity duration-200">
+
+            {% if perms.accounts.togglestatus_account and not a.is_superuser %}
+                <button hx-post="{% url 'accounts:htmx-toggle-status' a.id %}" 
+                        hx-target="#row-{{ a.id }}"
+                        hx-swap="outerHTML" 
+                        class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 {% if a.is_active %}bg-emerald-500{% else %}bg-slate-300{% endif %}" 
+                        role="switch" 
+                        aria-checked="{{ a.is_active|yesno:'true,false' }}"
+                        title="{% if a.is_active %}Nonaktifkan{% else %}Aktifkan{% endif %} Akun">
+                    <span class="sr-only">Toggle active status</span>
+                    <span aria-hidden="true" 
+                        class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {% if a.is_active %}translate-x-5{% else %}translate-x-0{% endif %}">
+                    </span>
+                </button>
+            {% endif %}
+
+            <div class="w-px h-5 bg-slate-200 hidden sm:block"></div> 
+
+            {% if perms.accounts.view_account %}
+                <a href="{% url 'accounts:detail' a.id %}" class="text-slate-400 hover:text-brand transition-colors" title="Lihat Detail">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                </a>
+            {% endif %}
+
+            {% if perms.accounts.change_account %}
+                <a href="{% url 'accounts:update' a.id %}" class="text-slate-400 hover:text-amber-500 transition-colors" title="Edit Akun">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                </a>
+            {% endif %}
+            
+            {% if perms.accounts.delete_account and not a.is_superuser %}
+                <a href="{% url 'accounts:delete' a.id %}" class="text-slate-400 hover:text-rose-500 transition-colors" title="Hapus Akun">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                </a>
+            {% endif %}
+        </div>
+    </td>
+</tr>
