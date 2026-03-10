@@ -65,7 +65,7 @@ INSTALLED_APPS = [
     'apps.analytics',
     'apps.finance',
     'apps.inventory',
-    'apps.orders',
+    'apps.orders'
 ]
 
 AUTH_USER_MODEL = 'accounts.Account'
@@ -84,6 +84,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'apps.main.middleware.Custom404Middleware',
 ]
 
 ROOT_URLCONF = 'config.urls'

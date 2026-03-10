@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.defaults import permission_denied
+from django.views.defaults import permission_denied, page_not_found
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -35,3 +35,4 @@ if settings.DEBUG:
 
 # Error handlers
 handler403 = permission_denied
+handler404 = page_not_found

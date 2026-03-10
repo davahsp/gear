@@ -70,7 +70,7 @@ class Migration(migrations.Migration):
         # Latest migration of each application
         ('accounts', '0001_initial'),
         ('finance', '0001_initial'),
-        ('inventory', '0001_initial'),
+        ('inventory', '0002_seed_raw_materials_and_variants'),
         ('orders', '0001_initial'),
     ]
 
