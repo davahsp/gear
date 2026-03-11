@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.models import Group
-from django.contrib.auth.views import LoginView, PasswordChangeView
+from django.contrib.auth.views import LoginView, PasswordChangeView, PasswordResetView
 from django.views.generic import View, TemplateView, UpdateView, DeleteView, DetailView, CreateView, FormView
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.list import ListView
@@ -9,7 +9,14 @@ from django.urls import reverse_lazy
 from django.db.models.functions import Concat
 from django.db.models import Value
 
-from .forms import AccountCreateForm, AccountUpdateForm, MyAccountPasswordChangeForm, PhoneAuthenticationForm, AccountPasswordChangeForm
+from .forms import (
+    AccountCreateForm, 
+    AccountUpdateForm, 
+    MyAccountPasswordChangeForm, 
+    PhoneAuthenticationForm, 
+    AccountPasswordChangeForm,
+    AccountPasswordResetForm,
+)
 from .models import Account
 
 class PhoneLoginView(LoginView):
@@ -17,6 +24,15 @@ class PhoneLoginView(LoginView):
     template_name = 'accounts/login.html'
     authentication_form = PhoneAuthenticationForm
     redirect_authenticated_user = True
+
+class AccountPasswordResetView(PasswordResetView):
+
+    form_class = AccountPasswordResetForm
+    template_name='accounts/password-reset.html'
+    success_url=reverse_lazy('accounts:password-reset-done')
+
+    email_template_name='accounts/password-reset/password-reset-email.txt'
+    html_email_template_name='accounts/password-reset/password-reset-email.html'
 
 class MyAccountDetailView(LoginRequiredMixin, DetailView):
 

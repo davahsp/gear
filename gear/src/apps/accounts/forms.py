@@ -5,6 +5,7 @@ from django.contrib.auth.forms import (
     AuthenticationForm, 
     PasswordChangeForm, 
     SetPasswordForm,
+    PasswordResetForm,
 )
 from django.contrib.auth.models import Group
 from django.forms import ModelForm
@@ -159,5 +160,16 @@ class PhoneAuthenticationForm(AuthenticationForm):
         widget=forms.PasswordInput(attrs={
             'class': base_style,
             'placeholder': '••••••••'
+        })
+    )
+
+class AccountPasswordResetForm(PasswordResetForm):
+    email = forms.EmailField(
+        label="Email",
+        max_length=254,
+        widget=forms.EmailInput(attrs={
+            'class': 'w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-gray-900',
+            'placeholder': 'Masukkan email terdaftar',
+            'autocomplete': 'email'
         })
     )

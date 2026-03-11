@@ -74,13 +74,15 @@
                     const btnCancel = document.getElementById('custom-cancel-btn');
                     const backdrop = modal.querySelector('.modal-backdrop');
                     const panel = modal.querySelector('.modal-panel');
+                    
+                    // NEW: Select the invisible wrapper that sits over the screen
+                    const modalWrapper = modal.querySelector('.overflow-y-auto');
 
                     // Set the dynamic message
                     messageEl.textContent = message;
 
                     // Show modal & trigger enter animations
                     modal.classList.remove('hidden');
-                    // Slight delay ensures the display:block registers before transitioning opacity
                     requestAnimationFrame(() => {
                         backdrop.classList.remove('opacity-0');
                         panel.classList.remove('opacity-0', 'translate-y-4', 'sm:scale-95');
@@ -88,40 +90,55 @@
 
                     // Reusable close function
                     const closeModal = (result) => {
-                        // Trigger exit animations
                         backdrop.classList.add('opacity-0');
                         panel.classList.add('opacity-0', 'translate-y-4', 'sm:scale-95');
                         
-                        // Wait for animation to finish before hiding and resolving
                         setTimeout(() => {
                             modal.classList.add('hidden');
-                            resolve(result); // Returns true or false back to HTMX
+                            resolve(result);
                         }, 200); 
                     };
 
-                    // Using direct assignment (onclick) ensures old event listeners are overwritten
-                    // every time the modal is summoned, preventing multiple ghost triggers.
                     btnConfirm.onclick = () => closeModal(true);
                     btnCancel.onclick = () => closeModal(false);
-                    backdrop.onclick = () => closeModal(false); // Close if clicking outside
+                    
+                    modalWrapper.onclick = (e) => {
+                        if (!panel.contains(e.target)) {
+                            closeModal(false);
+                        }
+                    };
                 });
             };
 
             // 2. The HTMX Interceptor
             document.body.addEventListener('htmx:confirm', function(evt) {
+                if (!evt.detail.question) return;
 
-                if (!evt.detail.question) {
-                    return;
-                }
-
-                // Stop HTMX from firing the request or showing the default browser alert
                 evt.preventDefault();
 
-                // Call our Promise-based modal
                 showCustomConfirmModal(evt.detail.question).then(function(isConfirmed) {
                     if (isConfirmed) {
-                        // If the promise resolves to true, tell HTMX to execute the request
                         evt.detail.issueRequest(true); 
+                    }
+                });
+            });
+
+            // 3. The Non-HTMX Interceptor
+            document.body.addEventListener('click', function(evt) {
+                const trigger = evt.target.closest('[data-confirm]');
+                if (!trigger) return; 
+
+                evt.preventDefault();
+
+                const message = trigger.getAttribute('data-confirm');
+
+                showCustomConfirmModal(message).then(function(isConfirmed) {
+                    if (isConfirmed) {
+                        if (trigger.tagName === 'A' && trigger.href) {
+                            window.location.href = trigger.href;
+                        } else if (trigger.form) {
+                            trigger.form.submit();
+                        }
                     }
                 });
             });
