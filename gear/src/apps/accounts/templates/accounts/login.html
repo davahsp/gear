@@ -24,6 +24,9 @@
                 {{ form.username.label }}
             </label>
             {{ form.username }}
+            <p id="phone-error" class="hidden mt-1.5 text-xs text-red-500 font-semibold">
+                Nomor telepon harus minimal 10 digit.
+            </p>
             <p class="mt-1.5 text-xs text-gray-400 italic">
                 *Masukkan hanya angka, tanpa dashes (-), spasi, atau simbol lain
             </p>
@@ -34,17 +37,80 @@
                 <label for="{{ form.password.id_for_label }}" class="block text-sm font-semibold text-gray-700">
                     {{ form.password.label }}
                 </label>
-                <a href="#" class="text-xs font-medium text-brand hover:underline">Lupa password?</a>
+                <a href="{% url 'accounts:password-reset' %}" class="text-xs font-medium text-brand hover:underline">Lupa password?</a>
             </div>
             {{ form.password }}
+            <p id="password-error" class="hidden mt-1.5 text-xs text-red-500 font-semibold">
+                Password harus minimal 8 karakter.
+            </p>
         </div>
 
         <div class="pt-2">
-            <button type="submit" 
-                class="w-full bg-brand text-white font-bold py-3 px-4 rounded-lg hover:bg-opacity-90 transition-colors shadow-md shadow-blue-900/10 active:transform active:scale-[0.98]">
+            <button type="submit" id="login-btn"
+                class="w-full bg-brand text-white font-bold py-3 px-4 rounded-lg shadow-md shadow-blue-900/10 transition-all duration-200">
                 Login
             </button>
         </div>
     </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Find inputs by their name attributes (Django defaults)
+        const phoneInput = document.querySelector('input[name="username"]');
+        const passwordInput = document.querySelector('input[name="password"]');
+        const loginBtn = document.getElementById('login-btn');
+        
+        const phoneError = document.getElementById('phone-error');
+        const passwordError = document.getElementById('password-error');
+
+        function validateForm() {
+            const phoneLen = phoneInput.value.length;
+            const passLen = passwordInput.value.length;
+            
+            let isValid = true;
+
+            // --- Phone Validation ---
+            // Show error ONLY if they started typing and it's less than 10
+            if (phoneLen > 0 && phoneLen < 10) {
+                phoneError.classList.remove('hidden');
+                isValid = false;
+            } else {
+                phoneError.classList.add('hidden');
+            }
+            // But if it's completely empty, it's still invalid for submission
+            if (phoneLen < 10) isValid = false;
+
+            // --- Password Validation ---
+            // Show error ONLY if they started typing and it's less than 8
+            if (passLen > 0 && passLen < 8) {
+                passwordError.classList.remove('hidden');
+                isValid = false;
+            } else {
+                passwordError.classList.add('hidden');
+            }
+            if (passLen < 8) isValid = false;
+
+            // --- Button UI Toggle ---
+            if (isValid) {
+                loginBtn.disabled = false;
+                loginBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                loginBtn.classList.add('hover:bg-opacity-90', 'active:transform', 'active:scale-[0.98]');
+            } else {
+                loginBtn.disabled = true;
+                loginBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                loginBtn.classList.remove('hover:bg-opacity-90', 'active:transform', 'active:scale-[0.98]');
+            }
+        }
+
+        // Attach event listeners to validate on every keystroke
+        if (phoneInput && passwordInput) {
+            phoneInput.addEventListener('input', validateForm);
+            passwordInput.addEventListener('input', validateForm);
+            
+            // Run once immediately on load to disable the button if the form starts empty
+            validateForm();
+        }
+    });
+</script>
 {% endblock %}
