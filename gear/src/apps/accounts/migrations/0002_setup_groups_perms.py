@@ -16,12 +16,11 @@ def setup_groups_perms(apps, schema_editor):
     
     group_perms = {
         'Sales': [
-            # Order permissions
             ('orders', 'add_order'),   
             ('orders', 'view_order'),
             ('orders', 'change_order'),
             ('orders', 'delete_order'),
-            # Customer permissions (full CRUD)
+
             ('orders', 'add_customer'),
             ('orders', 'view_customer'),
             ('orders', 'change_customer'),
@@ -38,17 +37,17 @@ def setup_groups_perms(apps, schema_editor):
             ('inventory', 'delete_purchase'),
         ],
         'Finance': [
-            # EntryCategory permissions
+
             ('finance', 'add_entrycategory'),
             ('finance', 'view_entrycategory'),
             ('finance', 'change_entrycategory'),
             ('finance', 'delete_entrycategory'),
-            # FinanceEntry permissions (operasional keuangan)
+
             ('finance', 'add_financeentry'),
             ('finance', 'view_financeentry'),
             ('finance', 'change_financeentry'),
             ('finance', 'delete_financeentry'),
-            # Customer permissions (read-only untuk lihat data customer)
+
             ('orders', 'view_customer'),
         ]
     }
