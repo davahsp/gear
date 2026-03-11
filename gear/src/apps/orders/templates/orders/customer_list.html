@@ -58,13 +58,18 @@
                 <input type="hidden" name="search" value="{{ search_query }}">
             </form>
 
+
             <!-- Add Button -->
-            <a href="{% url 'orders:customer-add' %}" class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                Tambah
-            </a>
+            {% if perms.order.add_customer %}
+                
+                <a href="{% url 'orders:customer-add' %}" class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Tambah
+                </a>
+
+            {% endif %} 
         </div>
     </div>
 
